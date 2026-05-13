@@ -562,6 +562,51 @@
   }
   .step-panel { display: none; animation: fadeUp .22s ease both; }
   .step-panel.active { display: block; }
+
+  /* progress + running estimate */
+  .step-progress {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    max-width: 640px;
+    margin: 0 auto 22px;
+  }
+  .step-progress span {
+    height: 5px;
+    border-radius: 999px;
+    background: var(--bg-muted);
+  }
+  .step-progress span.done { background: var(--brand); }
+  .step-progress span.now {
+    background: linear-gradient(90deg, var(--brand) 60%, var(--bg-muted) 60%);
+  }
+  .estimate-ticker {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 auto 20px;
+    padding: 10px 20px;
+    background: #fff;
+    border: 1px solid var(--brand-100);
+    border-radius: 999px;
+    color: var(--ink-2);
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: var(--shadow-sm);
+  }
+  .ticker-row { display: flex; justify-content: center; }
+  .estimate-ticker .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--brand);
+    box-shadow: 0 0 12px var(--brand);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  .estimate-ticker strong {
+    color: var(--brand);
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: -0.01em;
+  }
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -849,6 +894,254 @@
     max-width: 1080px;
     margin: 0 auto;
   }
+
+  /* Step 4 — form + live estimate side-by-side */
+  .info-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 32px;
+    align-items: start;
+    max-width: 1040px;
+    margin: 0 auto;
+  }
+  .info-form-card {
+    padding: 36px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+  .info-form-card .form-title {
+    font-size: 18px; font-weight: 900;
+    letter-spacing: -0.02em;
+    margin: 0 0 18px;
+  }
+  .info-form-card .ti { height: 54px; border-radius: 12px; font-size: 15px; margin-bottom: 10px; }
+  .live-estimate {
+    position: sticky;
+    top: 92px;
+    padding: 28px 24px;
+    background: linear-gradient(180deg, #fff 0%, var(--brand-50) 100%);
+    border: 1px solid var(--brand-100);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+  }
+  .live-estimate .label {
+    display: inline-flex; align-items: center; gap: 7px;
+    color: var(--brand-700);
+    font-size: 12px; font-weight: 900;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .live-estimate .label::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--brand); box-shadow: 0 0 10px var(--brand);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  .live-estimate .amount {
+    margin-top: 10px;
+    color: var(--ink);
+    font-size: clamp(34px, 4.4vw, 44px);
+    line-height: 1.05;
+    font-weight: 900;
+    letter-spacing: -0.035em;
+  }
+  .live-estimate .breakdown {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--brand-100);
+  }
+  .live-estimate .breakdown .row {
+    display: flex; justify-content: space-between;
+    padding: 5px 0;
+    font-size: 13px; color: var(--ink-2);
+    font-weight: 600;
+  }
+  .live-estimate .breakdown .row .v { color: var(--ink); font-weight: 700; }
+  .live-estimate .summary-tags {
+    margin-top: 14px;
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .live-estimate .summary-tags span {
+    padding: 4px 10px;
+    background: rgba(255,255,255,0.7);
+    border: 1px solid var(--brand-100);
+    border-radius: 999px;
+    color: var(--brand-700);
+    font-size: 11px; font-weight: 800;
+  }
+  @media (max-width: 900px) {
+    .info-layout { grid-template-columns: 1fr; }
+    .live-estimate { position: static; }
+  }
+
+  /* Step 5 — detailed breakdown */
+  .detail-paper {
+    max-width: 900px;
+    margin: 0 auto;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 36px;
+    box-shadow: var(--shadow);
+  }
+  .detail-paper h3 {
+    margin: 0 0 6px;
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: -0.025em;
+  }
+  .detail-paper .meta-row {
+    display: flex; flex-wrap: wrap;
+    justify-content: space-between; align-items: center;
+    padding-bottom: 18px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink-3); font-size: 12px;
+    gap: 12px;
+  }
+  .detail-paper .meta-row b { color: var(--ink); font-weight: 800; }
+  .detail-section {
+    display: flex; align-items: baseline;
+    gap: 8px;
+    margin: 22px 0 10px;
+    padding-left: 10px;
+    font-size: 14px; font-weight: 900;
+    color: var(--ink);
+    border-left: 3px solid var(--brand);
+  }
+  .detail-section .amt {
+    margin-left: auto; color: var(--ink-2);
+    font-size: 13px; font-weight: 700;
+  }
+  .detail-table { width: 100%; border-collapse: collapse; }
+  .detail-table th, .detail-table td {
+    padding: 10px 8px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--line);
+    text-align: right;
+  }
+  .detail-table th {
+    background: var(--bg-soft);
+    color: var(--ink-3);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .detail-table td.l, .detail-table th.l { text-align: left; }
+  .detail-table td.item { color: var(--ink); font-weight: 700; }
+  .detail-table td.desc { color: var(--ink-3); }
+  .detail-table td.amt { color: var(--ink); font-weight: 800; }
+  .detail-totals {
+    margin-top: 24px;
+    padding: 20px 22px;
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+  }
+  .detail-totals .row {
+    display: flex; justify-content: space-between;
+    padding: 6px 0;
+    font-size: 14px;
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+  .detail-totals .row .v { color: var(--ink); font-weight: 800; }
+  .detail-totals .row.final {
+    margin-top: 12px;
+    padding: 16px 20px;
+    background: var(--brand);
+    color: #fff;
+    border-radius: 12px;
+    font-size: 16px;
+  }
+  .detail-totals .row.final .v { color: #fff; font-size: 22px; font-weight: 900; }
+
+  /* Step 6 — support amount input + final */
+  .support-input-wrap {
+    width: min(520px, 100%);
+    margin: 8px auto 14px;
+    position: relative;
+  }
+  .support-input {
+    width: 100%;
+    height: 92px;
+    padding: 0 86px 0 28px;
+    border: 1px solid var(--line-strong);
+    border-radius: 20px;
+    background: #fff;
+    color: var(--ink);
+    text-align: right;
+    font-size: 34px;
+    font-weight: 900;
+    outline: none;
+    box-shadow: var(--shadow-sm);
+    transition: border-color .15s ease, box-shadow .15s ease;
+    font-variant-numeric: tabular-nums;
+  }
+  .support-input:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 4px rgba(31,95,255,.14);
+  }
+  .support-input-wrap .unit {
+    position: absolute;
+    right: 28px; top: 50%; transform: translateY(-50%);
+    color: var(--ink-2); font-size: 22px; font-weight: 900;
+  }
+  .support-help {
+    max-width: 520px;
+    margin: 0 auto 24px;
+    color: var(--ink-3);
+    font-size: 13px; line-height: 1.7;
+    text-align: center;
+  }
+  .support-chips {
+    display: flex; justify-content: center; gap: 8px;
+    flex-wrap: wrap;
+    margin: 12px auto 6px;
+  }
+  .support-chips button {
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink-2);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    transition: all .15s ease;
+  }
+  .support-chips button:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-50); }
+  .support-chips button.on {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: #fff;
+  }
+  .final-amount-card {
+    max-width: 620px;
+    margin: 28px auto 0;
+    padding: 26px 28px;
+    background: linear-gradient(180deg, var(--brand) 0%, var(--brand-700) 100%);
+    border-radius: 22px;
+    color: #fff;
+    box-shadow: 0 20px 50px rgba(31,95,255,.28);
+  }
+  .final-amount-card .row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 6px 0;
+    color: rgba(255,255,255,.85);
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .final-amount-card .row .v { color: #fff; font-weight: 800; }
+  .final-amount-card .row.final {
+    margin-top: 8px; padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,.25);
+    font-size: 16px;
+  }
+  .final-amount-card .row.final .v {
+    font-size: 30px; font-weight: 900;
+    letter-spacing: -0.025em;
+  }
   .final-card h3,
   .consult-form h3 {
     margin: 0 0 14px;
@@ -1076,6 +1369,10 @@
   </section>
 
   <section class="step-panel" data-step="1">
+    <div class="ticker-row">
+      <div class="estimate-ticker"><span class="dot"></span>현재까지 예상 견적<strong class="mono" data-ticker>₩0</strong></div>
+    </div>
+    <div class="step-progress" data-progress></div>
     <div class="flow-head">
       <span class="step-label">Step 01</span>
       <h2>어떤 공간을 철거하시나요?</h2>
@@ -1097,6 +1394,10 @@
   </section>
 
   <section class="step-panel" data-step="2">
+    <div class="ticker-row">
+      <div class="estimate-ticker"><span class="dot"></span>현재까지 예상 견적<strong class="mono" data-ticker>₩0</strong></div>
+    </div>
+    <div class="step-progress" data-progress></div>
     <div class="flow-head">
       <span class="step-label">Step 02</span>
       <h2>평수와 철거 범위</h2>
@@ -1121,6 +1422,10 @@
   </section>
 
   <section class="step-panel" data-step="3">
+    <div class="ticker-row">
+      <div class="estimate-ticker"><span class="dot"></span>현재까지 예상 견적<strong class="mono" data-ticker>₩0</strong></div>
+    </div>
+    <div class="step-progress" data-progress></div>
     <div class="flow-head">
       <span class="step-label">Step 03</span>
       <h2>폐기물 및 반출 환경</h2>
@@ -1145,89 +1450,122 @@
   </section>
 
   <section class="step-panel" data-step="4">
+    <div class="step-progress" data-progress></div>
     <div class="flow-head">
       <span class="step-label">Step 04</span>
       <h2>견적 확인 정보 입력</h2>
-      <p>정확한 현장 확인을 위해 아래 정보를 입력해 주세요.</p>
+      <p>예상 견적을 함께 확인하면서 정보를 입력해 주세요.</p>
     </div>
-    <div class="consult-form" style="max-width:760px;margin:0 auto">
-      <div class="row2">
-        <input class="ti" type="text" id="cName" placeholder="업체명 또는 성함">
-        <input class="ti" type="text" id="cContact" placeholder="연락처 (-없이 입력)">
+    <div class="info-layout">
+      <div class="info-form-card">
+        <div class="form-title">상담 신청 정보</div>
+        <div class="row2">
+          <input class="ti" type="text" id="cName" placeholder="업체명 또는 성함">
+          <input class="ti" type="text" id="cContact" placeholder="연락처 (-없이 입력)">
+        </div>
+        <input class="ti" type="text" id="cAddr" placeholder="주소를 입력해 주세요">
+        <input class="ti" type="text" id="cDetailAddr" placeholder="상세 주소를 입력해 주세요" style="margin-bottom:0">
+        <div class="form-note" id="infoError"></div>
       </div>
-      <input class="ti" type="text" id="cAddr" placeholder="주소를 입력해 주세요" style="margin-bottom:12px">
-      <input class="ti" type="text" id="cDetailAddr" placeholder="상세 주소를 입력해 주세요">
-      <div class="form-note" id="infoError"></div>
+      <aside class="live-estimate">
+        <span class="label">Live Estimate</span>
+        <div class="amount mono" data-ticker>₩0</div>
+        <div class="breakdown">
+          <div class="row"><span>직접공사비</span><span class="v mono" id="liveDirect">₩0</span></div>
+          <div class="row"><span>간접공사비</span><span class="v mono" id="liveIndirect">₩0</span></div>
+          <div class="row"><span>VAT (10%)</span><span class="v mono" id="liveVat">₩0</span></div>
+        </div>
+        <div class="summary-tags" id="liveTags"></div>
+      </aside>
     </div>
     <div class="flow-actions">
       <button class="flow-btn secondary" onclick="goStep(3)">이전 수정</button>
-      <button class="flow-btn" onclick="goEstimateAfterInfo()">견적 확인하기</button>
+      <button class="flow-btn" onclick="goEstimateAfterInfo()">세부 견적 확인</button>
     </div>
   </section>
 
   <section class="step-panel" data-step="5">
+    <div class="step-progress" data-progress></div>
     <div class="flow-head">
       <span class="step-label">Step 05</span>
-      <div class="step-icon" style="margin:0 auto 28px">
-        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/><path d="M8 4v6M16 14v6"/></svg>
-      </div>
-      <h2>1차 견적 산출 완료</h2>
-      <p>입력하신 정보와 선택 조건을 바탕으로 산출한 철거 비용입니다.</p>
+      <h2>세부 견적서</h2>
+      <p>입력하신 조건을 바탕으로 산출된 공정별 상세 견적입니다.</p>
     </div>
-    <div class="estimate-focus">
-      <div class="amount-box">
-        <div class="label">현재까지 예상 견적</div>
-        <div class="amount mono" id="quickTotal">₩0</div>
+    <div class="detail-paper">
+      <h3>철거 견적서</h3>
+      <div class="meta-row">
+        <div><b id="detailWho">고객</b> · <span id="detailWhere">-</span></div>
+        <div><span id="detailSpec">-</span></div>
+        <div>발급일 <b id="detailDate">-</b></div>
+      </div>
+      <div class="detail-section">직접공사비 <span class="amt mono" id="detailDirectAmt">₩0</span></div>
+      <table class="detail-table">
+        <thead>
+          <tr>
+            <th class="l">항목</th>
+            <th class="l">설명</th>
+            <th>단가</th>
+            <th>수량</th>
+            <th>단위</th>
+            <th>금액</th>
+          </tr>
+        </thead>
+        <tbody id="detailDirectLines"></tbody>
+      </table>
+      <div class="detail-section">간접공사비 <span class="amt mono" id="detailIndirectAmt">₩0</span></div>
+      <table class="detail-table">
+        <thead>
+          <tr><th class="l">항목</th><th class="l">설명</th><th>단가</th><th>수량</th><th>단위</th><th>금액</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="l item">공과잡비</td>
+            <td class="l desc">현장 운영·관리비</td>
+            <td class="mono">₩350,000</td>
+            <td>1</td>
+            <td>식</td>
+            <td class="amt mono">₩350,000</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="detail-totals">
+        <div class="row"><span>공급가액</span><span class="v mono" id="detailSubtotal">₩0</span></div>
+        <div class="row"><span>VAT (10%)</span><span class="v mono" id="detailVat">₩0</span></div>
+        <div class="row final"><span>예상 견적 합계</span><span class="v mono" id="detailTotal">₩0</span></div>
       </div>
     </div>
     <div class="flow-actions">
-      <button class="flow-btn secondary" onclick="goStep(4)">이전 수정</button>
-      <button class="flow-btn" onclick="goStep(6)">지원 가능 항목 확인</button>
+      <button class="flow-btn secondary" onclick="goStep(4)">이전</button>
+      <button class="flow-btn" onclick="goStep(6)">지원금 적용하기</button>
     </div>
   </section>
 
   <section class="step-panel" data-step="6">
+    <div class="step-progress" data-progress></div>
     <div class="flow-head">
       <span class="step-label">Step 06</span>
-      <h2>지원 가능 항목 확인</h2>
-      <p>조건에 따라 비용 조정이 가능한 항목을 확인합니다.</p>
+      <h2>지원금 적용</h2>
+      <p>적용 가능한 정부 지원금 또는 차감액을 입력하면 최종 부담금이 자동 계산됩니다.</p>
     </div>
-    <div class="option-grid two" id="support">
-      <button class="option-card on" data-value="check">검토 후 안내받기</button>
-      <button class="option-card" data-value="none">해당 없음</button>
+    <label class="support-input-wrap">
+      <input class="support-input mono" id="supportAmt" type="text" inputmode="numeric" placeholder="0" autocomplete="off">
+      <span class="unit">원</span>
+    </label>
+    <div class="support-chips">
+      <button type="button" data-support="0">없음</button>
+      <button type="button" data-support="500000">50만원</button>
+      <button type="button" data-support="1000000">100만원</button>
+      <button type="button" data-support="2000000">200만원</button>
+      <button type="button" data-support="3000000">300만원</button>
     </div>
-    <div class="support-note">지원금 또는 비용 차감 가능 여부는 현장 조건과 적용 기준 확인 후 최종 안내됩니다. 현재 화면의 예상 견적에는 차감액을 0원으로 반영합니다.</div>
+    <p class="support-help">지원금 또는 비용 차감 가능 여부는 현장 조건과 적용 기준 확인 후 최종 안내됩니다. 금액을 입력하면 미리 계산해 볼 수 있어요.</p>
+    <div class="final-amount-card">
+      <div class="row"><span>예상 견적 합계</span><span class="v mono" id="finalSubtotal">₩0</span></div>
+      <div class="row"><span>지원금 차감</span><span class="v mono" id="finalSupport">- ₩0</span></div>
+      <div class="row final"><span>최종 부담금</span><span class="v mono" id="finalTotal">₩0</span></div>
+    </div>
     <div class="flow-actions">
       <button class="flow-btn secondary" onclick="goStep(5)">이전</button>
-      <button class="flow-btn" onclick="goStep(7)">최종 견적 보기</button>
-    </div>
-  </section>
-
-  <section class="step-panel" data-step="7">
-    <div class="flow-head">
-      <span class="step-label">Step 07</span>
-      <h2>최종 견적</h2>
-    </div>
-    <div class="final-layout">
-      <div class="flow-card final-card">
-        <h3>최종 예상 견적서</h3>
-        <p style="margin:0 0 28px;text-align:center;color:var(--ink-2);font-weight:600">AI 계산식이 적용된 최종 금액입니다.</p>
-        <div id="finalLines"></div>
-        <div class="final-total">
-          <div class="mini-row"><span>예상 견적 합계</span><span class="value mono" id="finalSubtotal">₩0</span></div>
-          <div class="mini-row"><span>지원 가능 차감</span><span class="value mono">- ₩0</span></div>
-          <div class="mini-row"><span>최종 부담금</span><span class="value mono" id="finalTotal">₩0</span></div>
-        </div>
-      </div>
-      <div class="flow-card final-card">
-        <h3>방문 상담 신청 정보</h3>
-        <div class="mini-row"><span>이름/업체명</span><span class="value" id="reviewName">-</span></div>
-        <div class="mini-row"><span>연락처</span><span class="value" id="reviewContact">-</span></div>
-        <div class="mini-row"><span>주소</span><span class="value" id="reviewAddr">-</span></div>
-      </div>
-    </div>
-    <div class="flow-actions">
-      <button class="flow-btn secondary" onclick="goStep(6)">이전</button>
       <button class="flow-btn" style="background:#111;box-shadow:none" onclick="onSubmit()">상담 신청 완료</button>
     </div>
   </section>
@@ -1427,8 +1765,10 @@
     waste: true,
     works: { floor: true, wall: true },
     customer: { name: '', contact: '', addr: '' },
+    support: 0,
   };
 
+  const MAX_STEP = 6;
   let currentStep = 0;
   let lastTotal = 0;
   const fmt = n => '₩' + Math.round(n).toLocaleString('ko-KR');
@@ -1436,14 +1776,30 @@
   function qs(id) {
     return document.getElementById(id);
   }
+  function qsa(sel) {
+    return document.querySelectorAll(sel);
+  }
 
   function goStep(step) {
-    currentStep = Math.max(0, Math.min(7, step));
+    currentStep = Math.max(0, Math.min(MAX_STEP, step));
     document.querySelectorAll('.step-panel').forEach(panel => {
       panel.classList.toggle('active', Number(panel.dataset.step) === currentStep);
     });
+    updateProgress();
     renderEstimateViews(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updateProgress() {
+    qsa('[data-progress]').forEach(bar => {
+      bar.innerHTML = '';
+      for (let i = 1; i <= MAX_STEP; i++) {
+        const dot = document.createElement('span');
+        if (i < currentStep) dot.classList.add('done');
+        else if (i === currentStep) dot.classList.add('now');
+        bar.appendChild(dot);
+      }
+    });
   }
 
   function getInfoFields() {
@@ -1478,6 +1834,14 @@
     }
     if (error) error.textContent = '';
     goStep(5);
+  }
+
+  function bumpTicker() {
+    qsa('[data-ticker]').forEach(el => {
+      el.style.transition = 'transform .2s ease';
+      el.style.transform = 'scale(1.06)';
+      setTimeout(() => { el.style.transform = ''; }, 180);
+    });
   }
 
   function bindSingleGroup(rootId, onPick) {
@@ -1527,10 +1891,6 @@
     state.floor = parseInt(btn.dataset.floor, 10) || 1;
   });
 
-  bindSingleGroup('support', () => {
-    renderEstimateViews(true);
-  });
-
   qs('areaVal')?.addEventListener('input', e => {
     const value = parseInt(e.target.value, 10);
     if (Number.isFinite(value)) state.area = Math.max(1, value);
@@ -1542,6 +1902,26 @@
       syncCustomerInfo();
       if (qs('infoError')) qs('infoError').textContent = '';
       renderEstimateViews(true);
+    });
+  });
+
+  // Support amount input — only digits, formatted with thousands separators
+  function setSupport(val) {
+    const num = Math.max(0, parseInt(String(val).replace(/[^\d]/g, ''), 10) || 0);
+    state.support = num;
+    const input = qs('supportAmt');
+    if (input) input.value = num ? num.toLocaleString('ko-KR') : '';
+    renderEstimateViews(true);
+  }
+  qs('supportAmt')?.addEventListener('input', e => {
+    qsa('.support-chips button').forEach(b => b.classList.remove('on'));
+    setSupport(e.target.value);
+  });
+  qs('supportAmt')?.addEventListener('blur', e => setSupport(e.target.value));
+  qsa('.support-chips button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      qsa('.support-chips button').forEach(b => b.classList.toggle('on', b === btn));
+      setSupport(btn.dataset.support);
     });
   });
 
@@ -1614,21 +1994,61 @@
 
   function renderEstimateViews(animate = false) {
     const e = estimate();
-    if (qs('quickTotal')) qs('quickTotal').textContent = fmt(e.total);
-    if (qs('finalSubtotal')) qs('finalSubtotal').textContent = fmt(e.subtotal);
-    if (qs('finalTotal')) qs('finalTotal').textContent = fmt(e.total);
-    if (qs('reviewName')) qs('reviewName').textContent = state.customer.name || '-';
-    if (qs('reviewContact')) qs('reviewContact').textContent = state.customer.contact || '-';
-    if (qs('reviewAddr')) qs('reviewAddr').textContent = state.customer.addr || '-';
-    if (qs('finalLines')) {
-      qs('finalLines').innerHTML = e.direct.slice(0, 5).map(d => `
-        <div class="mini-row">
-          <span>${d.item}</span>
-          <span class="value">${d.qty}${d.unit} ${fmt(d.amount)}</span>
-        </div>
-      `).join('');
+    const support = Math.min(state.support || 0, e.total);
+    const finalTotal = Math.max(0, e.total - support);
+
+    // Running tickers (steps 1-4)
+    qsa('[data-ticker]').forEach(el => { el.textContent = fmt(e.total); });
+
+    // Step 4 — live estimate breakdown
+    if (qs('liveDirect')) qs('liveDirect').textContent = fmt(e.directSum);
+    if (qs('liveIndirect')) qs('liveIndirect').textContent = fmt(e.indirect);
+    if (qs('liveVat')) qs('liveVat').textContent = fmt(e.vat);
+    if (qs('liveTags')) {
+      const works = Object.keys(state.works).filter(k => state.works[k]).length;
+      const tags = [
+        state.building.label,
+        `${state.area}평`,
+        state.waste ? '폐기물 포함' : '철거만',
+        `반출: ${({ ground: '1층', elevator: '승강기', ladder: '사다리차', stairs: '계단' })[state.transport] || ''}`,
+        works ? `철거 ${works}항목` : '',
+      ].filter(Boolean);
+      qs('liveTags').innerHTML = tags.map(t => `<span>${t}</span>`).join('');
     }
-    lastTotal = e.total;
+
+    // Step 5 — detailed breakdown
+    if (qs('detailDirectLines')) {
+      const rows = e.direct.map(d => `
+        <tr>
+          <td class="l item">${d.item}</td>
+          <td class="l desc">${d.desc || ''}</td>
+          <td class="mono">${fmt(d.unitPrice)}</td>
+          <td>${d.qty}</td>
+          <td>${d.unit || ''}</td>
+          <td class="amt mono">${fmt(d.amount)}</td>
+        </tr>
+      `).join('');
+      qs('detailDirectLines').innerHTML = rows;
+    }
+    if (qs('detailWho')) qs('detailWho').textContent = state.customer.name || '고객';
+    if (qs('detailWhere')) qs('detailWhere').textContent = state.customer.addr || '주소 미입력';
+    if (qs('detailSpec')) qs('detailSpec').textContent = `${state.building.label} · ${state.area}평`;
+    if (qs('detailDate')) {
+      const d = new Date();
+      qs('detailDate').textContent = `${d.getFullYear()}. ${d.getMonth()+1}. ${d.getDate()}.`;
+    }
+    if (qs('detailDirectAmt')) qs('detailDirectAmt').textContent = fmt(e.directSum);
+    if (qs('detailIndirectAmt')) qs('detailIndirectAmt').textContent = fmt(e.indirect);
+    if (qs('detailSubtotal')) qs('detailSubtotal').textContent = fmt(e.subtotal);
+    if (qs('detailVat')) qs('detailVat').textContent = fmt(e.vat);
+    if (qs('detailTotal')) qs('detailTotal').textContent = fmt(e.total);
+
+    // Step 6 — final amount with support deduction
+    if (qs('finalSubtotal')) qs('finalSubtotal').textContent = fmt(e.total);
+    if (qs('finalSupport')) qs('finalSupport').textContent = '- ' + fmt(support);
+    if (qs('finalTotal')) qs('finalTotal').textContent = fmt(finalTotal);
+
+    lastTotal = finalTotal;
   }
 
   function nowDateNo() {
