@@ -812,6 +812,14 @@
     font-size: 15px;
     font-weight: 600;
   }
+  .form-note {
+    margin-top: 12px;
+    min-height: 22px;
+    color: var(--accent);
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+  }
   .estimate-focus .amount-box {
     margin: 36px auto 0;
     padding: 28px;
@@ -1132,18 +1140,39 @@
     </div>
     <div class="flow-actions">
       <button class="flow-btn secondary" onclick="goStep(2)">이전</button>
-      <button class="flow-btn" onclick="goStep(4)">견적 확인하기</button>
+      <button class="flow-btn" onclick="goStep(4)">정보 입력하기</button>
     </div>
   </section>
 
   <section class="step-panel" data-step="4">
     <div class="flow-head">
       <span class="step-label">Step 04</span>
+      <h2>견적 확인 정보 입력</h2>
+      <p>정확한 현장 확인을 위해 아래 정보를 입력해 주세요.</p>
+    </div>
+    <div class="consult-form" style="max-width:760px;margin:0 auto">
+      <div class="row2">
+        <input class="ti" type="text" id="cName" placeholder="업체명 또는 성함">
+        <input class="ti" type="text" id="cContact" placeholder="연락처 (-없이 입력)">
+      </div>
+      <input class="ti" type="text" id="cAddr" placeholder="주소를 입력해 주세요" style="margin-bottom:12px">
+      <input class="ti" type="text" id="cDetailAddr" placeholder="상세 주소를 입력해 주세요">
+      <div class="form-note" id="infoError"></div>
+    </div>
+    <div class="flow-actions">
+      <button class="flow-btn secondary" onclick="goStep(3)">이전 수정</button>
+      <button class="flow-btn" onclick="goEstimateAfterInfo()">견적 확인하기</button>
+    </div>
+  </section>
+
+  <section class="step-panel" data-step="5">
+    <div class="flow-head">
+      <span class="step-label">Step 05</span>
       <div class="step-icon" style="margin:0 auto 28px">
         <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/><path d="M8 4v6M16 14v6"/></svg>
       </div>
       <h2>1차 견적 산출 완료</h2>
-      <p>선택하신 조건을 바탕으로 산출한 철거 비용입니다.</p>
+      <p>입력하신 정보와 선택 조건을 바탕으로 산출한 철거 비용입니다.</p>
     </div>
     <div class="estimate-focus">
       <div class="amount-box">
@@ -1152,14 +1181,14 @@
       </div>
     </div>
     <div class="flow-actions">
-      <button class="flow-btn secondary" onclick="goStep(3)">이전 수정</button>
-      <button class="flow-btn" onclick="goStep(5)">지원 가능 항목 확인</button>
+      <button class="flow-btn secondary" onclick="goStep(4)">이전 수정</button>
+      <button class="flow-btn" onclick="goStep(6)">지원 가능 항목 확인</button>
     </div>
   </section>
 
-  <section class="step-panel" data-step="5">
+  <section class="step-panel" data-step="6">
     <div class="flow-head">
-      <span class="step-label">Step 05</span>
+      <span class="step-label">Step 06</span>
       <h2>지원 가능 항목 확인</h2>
       <p>조건에 따라 비용 조정이 가능한 항목을 확인합니다.</p>
     </div>
@@ -1169,14 +1198,14 @@
     </div>
     <div class="support-note">지원금 또는 비용 차감 가능 여부는 현장 조건과 적용 기준 확인 후 최종 안내됩니다. 현재 화면의 예상 견적에는 차감액을 0원으로 반영합니다.</div>
     <div class="flow-actions">
-      <button class="flow-btn secondary" onclick="goStep(4)">이전</button>
-      <button class="flow-btn" onclick="goStep(6)">최종 견적 보기</button>
+      <button class="flow-btn secondary" onclick="goStep(5)">이전</button>
+      <button class="flow-btn" onclick="goStep(7)">최종 견적 보기</button>
     </div>
   </section>
 
-  <section class="step-panel" data-step="6">
+  <section class="step-panel" data-step="7">
     <div class="flow-head">
-      <span class="step-label">Step 06</span>
+      <span class="step-label">Step 07</span>
       <h2>최종 견적</h2>
     </div>
     <div class="final-layout">
@@ -1190,19 +1219,15 @@
           <div class="mini-row"><span>최종 부담금</span><span class="value mono" id="finalTotal">₩0</span></div>
         </div>
       </div>
-      <div class="consult-form">
+      <div class="flow-card final-card">
         <h3>방문 상담 신청 정보</h3>
-        <div class="row2">
-          <input class="ti" type="text" id="cName" placeholder="업체명 또는 성함">
-          <input class="ti" type="text" id="cContact" placeholder="연락처 (-없이 입력)">
-        </div>
-        <input class="ti" type="text" id="cAddr" placeholder="주소를 입력해 주세요" style="margin-bottom:12px">
-        <input class="ti" type="text" id="cDetailAddr" placeholder="상세 주소를 입력해 주세요" style="margin-bottom:12px">
-        <input class="ti" type="text" id="cDate" placeholder="철거희망일 선택">
+        <div class="mini-row"><span>이름/업체명</span><span class="value" id="reviewName">-</span></div>
+        <div class="mini-row"><span>연락처</span><span class="value" id="reviewContact">-</span></div>
+        <div class="mini-row"><span>주소</span><span class="value" id="reviewAddr">-</span></div>
       </div>
     </div>
     <div class="flow-actions">
-      <button class="flow-btn secondary" onclick="goStep(5)">이전</button>
+      <button class="flow-btn secondary" onclick="goStep(6)">이전</button>
       <button class="flow-btn" style="background:#111;box-shadow:none" onclick="onSubmit()">상담 신청 완료</button>
     </div>
   </section>
@@ -1413,12 +1438,46 @@
   }
 
   function goStep(step) {
-    currentStep = Math.max(0, Math.min(6, step));
+    currentStep = Math.max(0, Math.min(7, step));
     document.querySelectorAll('.step-panel').forEach(panel => {
       panel.classList.toggle('active', Number(panel.dataset.step) === currentStep);
     });
     renderEstimateViews(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function getInfoFields() {
+    const name = qs('cName')?.value.trim() || '';
+    const contact = qs('cContact')?.value.trim() || '';
+    const addr = qs('cAddr')?.value.trim() || '';
+    const detailAddr = qs('cDetailAddr')?.value.trim() || '';
+    return { name, contact, addr, detailAddr };
+  }
+
+  function syncCustomerInfo() {
+    const info = getInfoFields();
+    state.customer.name = info.name;
+    state.customer.contact = info.contact;
+    state.customer.addr = `${info.addr} ${info.detailAddr}`.trim();
+    return info;
+  }
+
+  function goEstimateAfterInfo() {
+    const info = syncCustomerInfo();
+    const missing = [];
+    if (!info.name) missing.push('이름 또는 업체명');
+    if (!info.contact) missing.push('연락처');
+    if (!info.addr) missing.push('주소');
+    if (!info.detailAddr) missing.push('상세주소');
+
+    const error = qs('infoError');
+    if (missing.length) {
+      if (error) error.textContent = `${missing.join(', ')}을 입력해 주세요.`;
+      showToast('견적 확인을 위해 필수 정보를 입력해 주세요.');
+      return;
+    }
+    if (error) error.textContent = '';
+    goStep(5);
   }
 
   function bindSingleGroup(rootId, onPick) {
@@ -1478,16 +1537,11 @@
     renderEstimateViews(true);
   });
 
-  ['cName','cContact','cAddr','cDetailAddr','cDate'].forEach(id => {
+  ['cName','cContact','cAddr','cDetailAddr'].forEach(id => {
     qs(id)?.addEventListener('input', e => {
-      const key = id === 'cName' ? 'name' : id === 'cContact' ? 'contact' : 'addr';
-      if (id === 'cDetailAddr') {
-        state.customer.addr = `${qs('cAddr')?.value || ''} ${e.target.value}`.trim();
-      } else if (id === 'cAddr') {
-        state.customer.addr = `${e.target.value} ${qs('cDetailAddr')?.value || ''}`.trim();
-      } else if (key !== 'addr') {
-        state.customer[key] = e.target.value.trim();
-      }
+      syncCustomerInfo();
+      if (qs('infoError')) qs('infoError').textContent = '';
+      renderEstimateViews(true);
     });
   });
 
@@ -1563,6 +1617,9 @@
     if (qs('quickTotal')) qs('quickTotal').textContent = fmt(e.total);
     if (qs('finalSubtotal')) qs('finalSubtotal').textContent = fmt(e.subtotal);
     if (qs('finalTotal')) qs('finalTotal').textContent = fmt(e.total);
+    if (qs('reviewName')) qs('reviewName').textContent = state.customer.name || '-';
+    if (qs('reviewContact')) qs('reviewContact').textContent = state.customer.contact || '-';
+    if (qs('reviewAddr')) qs('reviewAddr').textContent = state.customer.addr || '-';
     if (qs('finalLines')) {
       qs('finalLines').innerHTML = e.direct.slice(0, 5).map(d => `
         <div class="mini-row">
