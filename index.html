@@ -1987,15 +1987,16 @@
 
 <script>
   const PRICE = {
-    LABOR_SKILLED: 250000,
-    LABOR_HELPER: 200000,
-    WASTE_MIXED: 800000,
-    WASTE_WOOD: 400000,
-    WASTE_CONCRETE: 400000,
-    SKY: 600000,
-    LADDER: 600000,
-    OVERHEAD: 350000,
-    ASBESTOS_ADD: 700000,
+    // 100건 실견적 DB 기준 보정 (2026-07). 인력 단가는 실제와 일치해 유지.
+    LABOR_SKILLED: 250000,   // 기공: DB 중앙값 250,000 (n=74) ✓
+    LABOR_HELPER: 200000,    // 조공: DB 중앙값 200,000 (n=69) ✓
+    WASTE_MIXED: 500000,     // 혼합폐기물: DB 평균 542,598/중앙값 400,000 (n=93) — 기존 800,000 과다
+    WASTE_WOOD: 400000,      // 폐목재: DB 중앙값 400,000 (n=18) ✓
+    WASTE_CONCRETE: 470000,  // 폐콘크리트: DB 평균 467,307 (n=26)
+    SKY: 400000,             // 스카이: DB 평균 399,200 (n=25) — 기존 600,000 과다
+    LADDER: 350000,          // 사다리차: DB 300,000 (n=4) — 기존 600,000 과다
+    OVERHEAD: 350000,        // 공과잡비(간접): DB 평균 337,647 (n=51) ✓
+    ASBESTOS_ADD: 700000,    // 석면: DB 조사 30~40만 / 철거 250만 이원화, 데이터 희소로 유지
   };
 
   const state = {
