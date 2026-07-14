@@ -1331,6 +1331,15 @@
     font-size: 13px; line-height: 1.7;
     text-align: center;
   }
+  .support-disclaimer {
+    max-width: 560px;
+    margin: 14px auto 0;
+    color: var(--ink-3);
+    font-size: 11.5px;
+    line-height: 1.65;
+    text-align: center;
+    font-weight: 500;
+  }
   .support-chips {
     display: flex; justify-content: center; gap: 8px;
     flex-wrap: wrap;
@@ -1584,7 +1593,7 @@
         <p class="lead">복잡한 철거 비용을 더 이상 고민하지 마세요. 공간·평수·철거 범위만 선택하면 1차 예상 견적부터 정부 지원금 차감까지 한 화면에서 확인할 수 있습니다.</p>
         <button class="flow-btn" onclick="goStep(1)">내 견적 무료로 확인하기 →</button>
         <div class="hero-meta">
-          <div class="item"><div class="v"><em>1</em>분</div><div class="k">평균 산출 시간</div></div>
+          <div class="item"><div class="v"><em>30</em>초</div><div class="k">평균 산출 시간</div></div>
           <div class="item"><div class="v"><em>12,840</em>건</div><div class="k">누적 발급 견적</div></div>
           <div class="item"><div class="v"><em>300</em>+</div><div class="k">검증 시공팀</div></div>
         </div>
@@ -1862,9 +1871,11 @@
     <p class="support-help">지원금 또는 비용 차감 가능 여부는 현장 조건과 적용 기준 확인 후 최종 안내됩니다. 금액을 입력하면 미리 계산해 볼 수 있어요.</p>
     <div class="final-amount-card">
       <div class="row"><span>예상 견적 합계</span><span class="v mono" id="finalSubtotal">₩0</span></div>
-      <div class="row"><span>지원금 차감</span><span class="v mono" id="finalSupport">- ₩0</span></div>
+      <div class="row"><span>철거지원금 (평당 20만원)</span><span class="v mono" id="finalDemoSupport">- ₩0</span></div>
+      <div class="row"><span>추가 지원금 차감</span><span class="v mono" id="finalSupport">- ₩0</span></div>
       <div class="row final"><span>최종 부담금</span><span class="v mono" id="finalTotal">₩0</span></div>
     </div>
+    <p class="support-disclaimer">*서울 지역 300만원 추가로 지원됩니다. 지자체별로 지원금 차이가 있으니 자세한 내용은 고객센터(1555-6205)에 상담을 권장드립니다.</p>
     <div class="flow-actions">
       <button class="flow-btn secondary" onclick="goStep(5)">이전</button>
       <button class="flow-btn" style="background:#111;box-shadow:none" onclick="onSubmit()">상담 신청 완료</button>
@@ -2335,8 +2346,10 @@
 
   function renderEstimateViews(animate = false) {
     const e = estimate();
-    const support = Math.min(state.support || 0, e.total);
-    const finalTotal = Math.max(0, e.total - support);
+    const demoSupport = Math.min((state.area || 0) * 200000, e.total);
+    const remaining = Math.max(0, e.total - demoSupport);
+    const support = Math.min(state.support || 0, remaining);
+    const finalTotal = Math.max(0, remaining - support);
 
     // Running tickers (steps 1-4)
     qsa('[data-ticker]').forEach(el => { el.textContent = fmt(e.total); });
@@ -2386,6 +2399,7 @@
 
     // Step 6 — final amount with support deduction
     if (qs('finalSubtotal')) qs('finalSubtotal').textContent = fmt(e.total);
+    if (qs('finalDemoSupport')) qs('finalDemoSupport').textContent = '- ' + fmt(demoSupport);
     if (qs('finalSupport')) qs('finalSupport').textContent = '- ' + fmt(support);
     if (qs('finalTotal')) qs('finalTotal').textContent = fmt(finalTotal);
 
