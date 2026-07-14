@@ -678,7 +678,7 @@
   /* progress + running estimate */
   .step-progress {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 6px;
     max-width: 640px;
     margin: 0 auto 22px;
@@ -1036,6 +1036,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-wrap: wrap;
     gap: 12px;
     margin-top: 40px;
   }
@@ -1805,7 +1806,8 @@
     </div>
     <div class="flow-actions">
       <button class="flow-btn secondary" onclick="goStep(3)">이전 수정</button>
-      <button class="flow-btn" id="goDetailBtn" disabled onclick="goEstimateAfterInfo()">세부 견적 확인</button>
+      <button class="flow-btn secondary" id="goDetailBtn" disabled onclick="goEstimateAfterInfo()">세부 견적서 확인하기</button>
+      <button class="flow-btn" id="goSubmitBtn" disabled onclick="submitAfterInfo()">상담 신청하기</button>
     </div>
   </section>
 
@@ -1856,43 +1858,15 @@
       <div class="detail-totals">
         <div class="row"><span>공급가액</span><span class="v mono" id="detailSubtotal">₩0</span></div>
         <div class="row"><span>VAT (10%)</span><span class="v mono" id="detailVat">₩0</span></div>
-        <div class="row final"><span>예상 견적 합계</span><span class="v mono" id="detailTotal">₩0</span></div>
+        <div class="row"><span>예상 견적 합계</span><span class="v mono" id="detailTotal">₩0</span></div>
+        <div class="row"><span>철거지원금 (평당 20만원 한도)</span><span class="v mono" id="detailDemoSupport">- ₩0</span></div>
+        <div class="row final"><span>최종 부담금</span><span class="v mono" id="detailFinal">₩0</span></div>
       </div>
+      <p class="support-disclaimer">*서울 지역 300만원 추가로 지원됩니다. 지자체별로 지원금 차이가 있으니 자세한 내용은 고객센터(1555-6205)에 상담을 권장드립니다.</p>
     </div>
     <div class="flow-actions">
       <button class="flow-btn secondary" onclick="goStep(4)">이전</button>
-      <button class="flow-btn" onclick="goStep(6)">지원금 적용하기</button>
-    </div>
-  </section>
-
-  <section class="step-panel" data-step="6">
-    <div class="step-progress" data-progress></div>
-    <div class="flow-head">
-      <span class="step-label">Step 06</span>
-      <h2>지원금 적용</h2>
-      <p>적용 가능한 정부 지원금 또는 차감액을 입력하면 최종 부담금이 자동 계산됩니다.</p>
-    </div>
-    <label class="support-input-wrap">
-      <input class="support-input mono" id="supportAmt" type="text" inputmode="numeric" placeholder="0" autocomplete="off">
-      <span class="unit">원</span>
-    </label>
-    <div class="support-chips">
-      <button type="button" data-support="0">없음</button>
-      <button type="button" data-support="500000">50만원</button>
-      <button type="button" data-support="1000000">100만원</button>
-      <button type="button" data-support="2000000">200만원</button>
-      <button type="button" data-support="3000000">300만원</button>
-    </div>
-    <p class="support-help">지원금 또는 비용 차감 가능 여부는 현장 조건과 적용 기준 확인 후 최종 안내됩니다. 금액을 입력하면 미리 계산해 볼 수 있어요.</p>
-    <div class="final-amount-card">
-      <div class="row"><span>예상 견적 합계</span><span class="v mono" id="finalSubtotal">₩0</span></div>
-      <div class="row"><span>철거지원금 (평당 20만원 한도)</span><span class="v mono" id="finalDemoSupport">- ₩0</span></div>
-      <div class="row"><span>추가 지원금 차감</span><span class="v mono" id="finalSupport">- ₩0</span></div>
-      <div class="row final"><span>최종 부담금</span><span class="v mono" id="finalTotal">₩0</span></div>
-    </div>
-    <div class="flow-actions">
-      <button class="flow-btn secondary" onclick="goStep(5)">이전</button>
-      <button class="flow-btn" style="background:#111;box-shadow:none" onclick="onSubmit()">상담 신청 완료</button>
+      <button class="flow-btn" onclick="onSubmit()">상담 신청하기</button>
     </div>
   </section>
 </main>
@@ -2037,7 +2011,7 @@
     support: 0,
   };
 
-  const MAX_STEP = 6;
+  const MAX_STEP = 5;
   let currentStep = 0;
   let lastTotal = 0;
   const fmt = n => '₩' + Math.round(n).toLocaleString('ko-KR');
@@ -2159,8 +2133,10 @@
     ids.forEach(id => {
       if (!validateField(id, opts)) ok = false;
     });
-    const btn = qs('goDetailBtn');
-    if (btn) btn.disabled = !ok;
+    ['goDetailBtn', 'goSubmitBtn'].forEach(bid => {
+      const btn = qs(bid);
+      if (btn) btn.disabled = !ok;
+    });
     return ok;
   }
 
@@ -2171,6 +2147,15 @@
       return;
     }
     goStep(5);
+  }
+
+  function submitAfterInfo() {
+    syncCustomerInfo();
+    if (!validateAllInfo({ showError: true })) {
+      showToast('입력하지 않았거나 형식이 잘못된 항목이 있어요.');
+      return;
+    }
+    onSubmit();
   }
 
   // ===== Daum Postcode address search =====
@@ -2268,26 +2253,6 @@
     el.addEventListener('blur', () => {
       validateField(id, { showError: true });
       validateAllInfo({ showError: false });
-    });
-  });
-
-  // Support amount input — only digits, formatted with thousands separators
-  function setSupport(val) {
-    const num = Math.max(0, parseInt(String(val).replace(/[^\d]/g, ''), 10) || 0);
-    state.support = num;
-    const input = qs('supportAmt');
-    if (input) input.value = num ? num.toLocaleString('ko-KR') : '';
-    renderEstimateViews(true);
-  }
-  qs('supportAmt')?.addEventListener('input', e => {
-    qsa('.support-chips button').forEach(b => b.classList.remove('on'));
-    setSupport(e.target.value);
-  });
-  qs('supportAmt')?.addEventListener('blur', e => setSupport(e.target.value));
-  qsa('.support-chips button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      qsa('.support-chips button').forEach(b => b.classList.toggle('on', b === btn));
-      setSupport(btn.dataset.support);
     });
   });
 
@@ -2414,12 +2379,8 @@
     if (qs('detailSubtotal')) qs('detailSubtotal').textContent = fmt(e.subtotal);
     if (qs('detailVat')) qs('detailVat').textContent = fmt(e.vat);
     if (qs('detailTotal')) qs('detailTotal').textContent = fmt(e.total);
-
-    // Step 6 — final amount with support deduction
-    if (qs('finalSubtotal')) qs('finalSubtotal').textContent = fmt(e.total);
-    if (qs('finalDemoSupport')) qs('finalDemoSupport').textContent = '- ' + fmt(demoSupport);
-    if (qs('finalSupport')) qs('finalSupport').textContent = '- ' + fmt(support);
-    if (qs('finalTotal')) qs('finalTotal').textContent = fmt(finalTotal);
+    if (qs('detailDemoSupport')) qs('detailDemoSupport').textContent = '- ' + fmt(demoSupport);
+    if (qs('detailFinal')) qs('detailFinal').textContent = fmt(finalTotal);
 
     lastTotal = finalTotal;
   }
