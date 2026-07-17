@@ -13,12 +13,12 @@
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <style>
   :root {
-    --brand: #2563EB;
-    --brand-600: #1D4ED8;
-    --brand-700: #1E40AF;
-    --brand-50: #EFF4FF;
-    --brand-100: #DBE6FE;
-    --brand-200: #B5CAFD;
+    --brand: #2F6BF6;
+    --brand-600: #145CE6;
+    --brand-700: #114DC0;
+    --brand-50: #ECF2FD;
+    --brand-100: #C7D8FA;
+    --brand-200: #A6C2F7;
 
     --bg: #FFFFFF;
     --bg-soft: #F5F7FB;
@@ -52,7 +52,7 @@
     background: var(--bg-grad);
     background-attachment: fixed;
     color: var(--ink);
-    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-family: 'SUIT Variable', 'SUIT', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     line-height: 1.55;
@@ -76,26 +76,16 @@
     padding: 14px 24px;
   }
   .logo {
-    display: flex; align-items: center; gap: 10px;
-    font-weight: 800; letter-spacing: -0.025em; font-size: 21px;
-    color: var(--ink);
+    display: flex; align-items: center;
     cursor: pointer;
     background: none; border: 0; padding: 0;
     font-family: inherit;
   }
-  .logo:hover .logo-mark {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 22px rgba(37, 99, 235, .38);
+  .logo-img {
+    height: 30px; width: auto; display: block;
+    transition: transform .15s ease, opacity .15s ease;
   }
-  .logo-mark { transition: transform .15s ease, box-shadow .15s ease; }
-  .logo-mark {
-    width: 34px; height: 34px; border-radius: 9px;
-    background: var(--brand);
-    display: grid; place-items: center;
-    box-shadow: 0 6px 16px rgba(31, 95, 255, 0.30);
-    color: #fff;
-  }
-  .logo-mark svg { width: 22px; height: 22px; display: block; }
+  .logo:hover .logo-img { transform: translateY(-1px); opacity: .85; }
   .nav-right { display: flex; align-items: center; gap: 8px; }
   .nav-home {
     display: none;
@@ -1579,15 +1569,7 @@
 <nav class="nav">
   <div class="nav-inner">
     <button class="logo" type="button" onclick="goStep(0)" aria-label="처음 화면으로">
-      <div class="logo-mark">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M3.5 11.5 L12 4 L20.5 11.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M5.5 10.5 V20 H18.5 V10.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M14 14 L17.5 17.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-          <path d="M15.5 12 L19 15.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <span>철거의 정석</span>
+      <img class="logo-img" src="assets/logo.png" alt="철거의 정석" />
     </button>
     <div class="nav-right">
       <button type="button" class="nav-home" id="navHome" onclick="goStep(0)">
