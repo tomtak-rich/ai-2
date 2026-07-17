@@ -1070,6 +1070,15 @@
     transform: none;
     box-shadow: var(--shadow-sm);
   }
+  .flow-btn.secondary:disabled,
+  .flow-btn.secondary:disabled:hover {
+    background: var(--bg-muted);
+    color: var(--ink-4);
+    border-color: var(--line);
+    box-shadow: none;
+    transform: none;
+    cursor: not-allowed;
+  }
   .estimate-focus {
     max-width: 620px;
     margin: 0 auto;
