@@ -411,7 +411,8 @@
     position: relative;
   }
   .addr-input-wrap .ti {
-    padding-right: 96px;
+    padding-right: 104px;
+    margin-bottom: 0;
   }
   .addr-search-btn {
     position: absolute;
@@ -670,7 +671,7 @@
   /* progress + running estimate */
   .step-progress {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 6px;
     max-width: 640px;
     margin: 0 auto 22px;
@@ -2098,6 +2099,7 @@
   function updateProgress() {
     qsa('[data-progress]').forEach(bar => {
       bar.innerHTML = '';
+      bar.style.gridTemplateColumns = `repeat(${MAX_STEP}, 1fr)`;
       for (let i = 1; i <= MAX_STEP; i++) {
         const dot = document.createElement('span');
         if (i < currentStep) dot.classList.add('done');
