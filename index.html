@@ -2041,6 +2041,12 @@
     etc:    1.00,
   };
   const RESTORE_PER_PYEONG = 30000;  // 원상복구(기본 마감·미장·도장 복구) 평당 단가
+  // 건물유형별 고정 할증(정액) — 특수 설비·마감으로 유형에 정액으로 추가되는 비용
+  const BUILDING_SURCHARGE = {
+    beauty: 500000,  // 미용/뷰티
+    play:   500000,  // PC방/노래방
+    clinic: 500000,  // 병의원
+  };
 
   const state = {
     building: { mul: 1.0, label: '매장/상가', key: 'shop' },
@@ -2378,7 +2384,9 @@
       }
     }
 
-    // 공통: 장비·반출 + 원상복구
+    // 공통: 유형 할증 + 장비·반출 + 원상복구
+    const surcharge = BUILDING_SURCHARGE[state.building.key] || 0;
+    if (surcharge) direct.push({ item: '유형 할증', desc: `${state.building.label} 특수 설비·마감`, qty: 1, unit: '식', unitPrice: surcharge, amount: surcharge });
     if (sky) direct.push({ item: '스카이 장비', desc: '외벽·고소작업', qty: 1, unit: '대', unitPrice: PRICE.SKY, amount: PRICE.SKY });
     if (ladder) direct.push({ item: '사다리차', desc: `${state.floor}층 운반`, qty: 1, unit: '대', unitPrice: PRICE.LADDER, amount: PRICE.LADDER });
     if (state.transport === 'stairs') direct.push({ item: '계단 반출 할증', desc: `${state.floor}층 계단 운반`, qty: 1, unit: '식', unitPrice: 300000, amount: 300000 });
