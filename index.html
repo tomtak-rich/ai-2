@@ -2021,18 +2021,21 @@
   //   - action: 폼 URL의 '/viewform' 을 '/formResponse' 로 바꾼 주소
   //   - entry ID: 폼 우상단 ⋮ → '미리 채워진 링크 가져오기'로 각 항목 값 입력 후 생성된 URL에서 entry.xxxx 확인
   const GFORM = {
-    action: 'https://docs.google.com/forms/d/e/FORM_ID/formResponse',
+    action: 'https://docs.google.com/forms/d/e/1FAIpQLScSNuwI_a2NES9iyxh_VF7ybZREog3fShsL2qSQJ_o4v6BnIQ/formResponse',
     fields: {
-      name:     'entry.0000000001',  // 이름/업체명
-      contact:  'entry.0000000002',  // 연락처
-      address:  'entry.0000000003',  // 주소
-      building: 'entry.0000000004',  // 공간 유형
-      mode:     'entry.0000000005',  // 철거 방식
-      area:     'entry.0000000006',  // 평수
-      scope:    'entry.0000000007',  // 철거 범위
-      restore:  'entry.0000000008',  // 원상복구
-      total:    'entry.0000000009',  // 예상 견적
-      detail:   'entry.0000000010',  // 상세 내역(전체 본문)
+      building:   'entry.1981485812',  // 철거할 공간 유형 (라디오)
+      area:       'entry.1704546183',  // 평수 입력
+      mode:       'entry.1406783396',  // 철거 방식 (라디오)
+      scope:      'entry.986714748',   // 철거 범위 (체크박스, 다중)
+      restore:    'entry.1847357281',  // 원상복구 (라디오)
+      waste:      'entry.668916796',   // 폐기물 처리 (라디오)
+      transport:  'entry.364797337',   // 반출 환경 (라디오)
+      name:       'entry.1302820050',  // 이름/업체명
+      contact:    'entry.1682218969',  // 연락처
+      address:    'entry.40085375',    // 현장 주소
+      detailAddr: 'entry.599737130',   // 상세 주소
+      total:      'entry.311770998',   // 예상 견적 금액
+      note:       'entry.587634870',   // 기타 문의사항 → 견적 상세 내역
     },
   };
 
@@ -2565,51 +2568,50 @@
   }
 
   // ===== 상담 신청 → 이메일 발송 =====
-  // 1) 이메일에 담을 데이터 수집
+  // 1) 폼에 담을 데이터 수집 — 선택형 값은 구글폼 옵션과 정확히 일치시킴
   function collectConsultData() {
     const e = estimate();
     const info = getInfoFields();
-    const modeLabel = state.mode === 'partial' ? '부분 철거' : '전체 철거';
-    const transportLabel = { ground: '1층', elevator: '승강기', ladder: '사다리차', stairs: '계단' }[state.transport] || state.transport;
+    const yn = b => (b ? '네, 필요해요' : '아니요 (철거만)');
+    const workMap = { ceiling: '천장 철거', wall: '벽체 철거', floor: '바닥 철거', kitchen: '주방 철거' };
+    const works = state.mode === 'partial'
+      ? ['ceiling', 'wall', 'floor', 'kitchen'].filter(k => state.works[k]).map(k => workMap[k])
+      : [];  // 전체철거는 범위 미체크
     return {
       name: info.name,
       contact: info.contact,
-      address: `${info.addr} ${info.detailAddr}`.trim(),
-      building: state.building.label,
-      mode: modeLabel,
-      area: state.area,
-      scope: buildScope().join(', '),
-      restore: state.restore ? '필요' : '불필요',
-      waste: state.waste ? '필요' : '불필요(철거만)',
-      transport: transportLabel,
-      total: e.total,
-      directSum: e.directSum,
-      vat: e.vat,
+      addr: info.addr,
+      detailAddr: info.detailAddr,
+      addressFull: `${info.addr} ${info.detailAddr}`.trim(),
+      building: state.building.label,               // 라디오 옵션과 일치
+      mode: state.mode === 'partial' ? '부분 철거' : '전체 철거',
+      area: String(state.area),
+      works,                                          // 체크박스 다중값
+      scopeText: works.length ? works.join(', ') : '전체 철거',
+      restore: yn(state.restore),
+      waste: yn(state.waste),
+      transport: { ground: '1층', elevator: '승강기', ladder: '사다리차', stairs: '계단' }[state.transport] || state.transport,
+      total: fmt(e.total),
+      directSum: fmt(e.directSum),
+      vat: fmt(e.vat),
       lines: e.direct.map(d => `${d.item}${d.desc ? `(${d.desc})` : ''} ${d.qty}${d.unit} = ${fmt(d.amount)}`),
     };
   }
 
-  // 2) ▼▼▼ 이메일 본문 형식(템플릿) — 형식이 정해지면 이 함수만 수정하면 됩니다 ▼▼▼
+  // 2) ▼▼▼ 상세 내역 본문(템플릿) — '기타 문의사항' 칸에 함께 기록. 형식 바뀌면 여기만 수정 ▼▼▼
   function buildConsultMessage(d) {
     return [
-      '■ 철거의 정석 AI견적 상담 신청',
-      '',
-      `· 이름/업체명: ${d.name}`,
-      `· 연락처: ${d.contact}`,
-      `· 주소: ${d.address}`,
-      '',
-      '■ 견적 조건',
+      '[AI 견적 상세 내역]',
       `· 공간 유형: ${d.building}`,
       `· 철거 방식: ${d.mode} (${d.area}평)`,
-      `· 철거 범위: ${d.scope}`,
-      `· 원상복구: ${d.restore}`,
-      `· 폐기물: ${d.waste} / 반출: ${d.transport}`,
+      `· 철거 범위: ${d.scopeText}`,
+      `· 원상복구: ${d.restore} / 폐기물: ${d.waste} / 반출: ${d.transport}`,
       '',
-      '■ 견적 내역',
-      ...d.lines.map(l => `· ${l}`),
-      `· 직접공사비: ${fmt(d.directSum)}`,
-      `· VAT(10%): ${fmt(d.vat)}`,
-      `· 예상 총 견적: ${fmt(d.total)}`,
+      '· 견적 항목:',
+      ...d.lines.map(l => `  - ${l}`),
+      `· 직접공사비: ${d.directSum}`,
+      `· VAT(10%): ${d.vat}`,
+      `· 예상 총 견적: ${d.total}`,
       '',
       `신청 시각: ${new Date().toLocaleString('ko-KR')}`,
     ].join('\n');
@@ -2627,17 +2629,20 @@
     const d = collectConsultData();
     const f = GFORM.fields;
     const fd = new FormData();
-    const put = (entry, val) => { if (entry && entry.indexOf('0000') === -1) fd.append(entry, val); };
+    const put = (entry, val) => { if (entry && val != null && val !== '') fd.append(entry, val); };
+    put(f.building, d.building);
+    put(f.area, d.area);
+    put(f.mode, d.mode);
+    d.works.forEach(w => put(f.scope, w));   // 체크박스: 선택 항목마다 append
+    put(f.restore, d.restore);
+    put(f.waste, d.waste);
+    put(f.transport, d.transport);
     put(f.name, d.name);
     put(f.contact, d.contact);
-    put(f.address, d.address);
-    put(f.building, d.building);
-    put(f.mode, `${d.mode} (${d.area}평)`);
-    put(f.area, d.area);
-    put(f.scope, d.scope);
-    put(f.restore, d.restore);
-    put(f.total, fmt(d.total));
-    put(f.detail, buildConsultMessage(d));
+    put(f.address, d.addr);
+    put(f.detailAddr, d.detailAddr);
+    put(f.total, d.total);
+    put(f.note, buildConsultMessage(d));
 
     if (btn) { btn.dataset.sending = '1'; btn.disabled = true; btn.textContent = '접수 중…'; }
     try {
