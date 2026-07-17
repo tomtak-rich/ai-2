@@ -682,9 +682,6 @@
     background: var(--bg-muted);
   }
   .step-progress span.done { background: var(--brand); }
-  .step-progress span.now {
-    background: linear-gradient(90deg, var(--brand) 60%, var(--bg-muted) 60%);
-  }
   .estimate-ticker {
     display: inline-flex;
     align-items: center;
@@ -2102,8 +2099,7 @@
       bar.style.gridTemplateColumns = `repeat(${MAX_STEP}, 1fr)`;
       for (let i = 1; i <= MAX_STEP; i++) {
         const dot = document.createElement('span');
-        if (i < currentStep) dot.classList.add('done');
-        else if (i === currentStep) dot.classList.add('now');
+        if (i <= currentStep) dot.classList.add('done');
         bar.appendChild(dot);
       }
     });
