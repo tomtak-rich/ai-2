@@ -2015,6 +2015,15 @@
 <div class="toast" id="toast"></div>
 
 <script>
+  // ===== 상담 신청 이메일 발송 설정 =====
+  // Web3Forms(무료)로 지정 이메일에 상담 신청 내용을 발송합니다.
+  // ▼ https://web3forms.com 에서 dnslwkatn1@gmail.com 로 발급받은 Access Key를 붙여넣으세요.
+  const CONSULT = {
+    endpoint: 'https://api.web3forms.com/submit',
+    accessKey: 'REPLACE_WITH_WEB3FORMS_ACCESS_KEY',  // ← 발급받은 키로 교체
+    toEmail: 'dnslwkatn1@gmail.com',                 // 신청이 도착할 이메일
+  };
+
   const PRICE = {
     // 100건 실견적 DB 기준 보정 (2026-07). 인력 단가는 실제와 일치해 유지.
     LABOR_SKILLED: 250000,   // 기공: DB 중앙값 250,000 (n=74) ✓
@@ -2543,8 +2552,99 @@
     qs('psScope').innerHTML = buildScope().map(s => `· ${s}`).join('<br/>');
   }
 
-  function onSubmit() {
-    showToast('상담 신청이 접수되었습니다. 곧 연락드리겠습니다.');
+  // ===== 상담 신청 → 이메일 발송 =====
+  // 1) 이메일에 담을 데이터 수집
+  function collectConsultData() {
+    const e = estimate();
+    const info = getInfoFields();
+    const modeLabel = state.mode === 'partial' ? '부분 철거' : '전체 철거';
+    const transportLabel = { ground: '1층', elevator: '승강기', ladder: '사다리차', stairs: '계단' }[state.transport] || state.transport;
+    return {
+      name: info.name,
+      contact: info.contact,
+      address: `${info.addr} ${info.detailAddr}`.trim(),
+      building: state.building.label,
+      mode: modeLabel,
+      area: state.area,
+      scope: buildScope().join(', '),
+      restore: state.restore ? '필요' : '불필요',
+      waste: state.waste ? '필요' : '불필요(철거만)',
+      transport: transportLabel,
+      total: e.total,
+      directSum: e.directSum,
+      vat: e.vat,
+      lines: e.direct.map(d => `${d.item}${d.desc ? `(${d.desc})` : ''} ${d.qty}${d.unit} = ${fmt(d.amount)}`),
+    };
+  }
+
+  // 2) ▼▼▼ 이메일 본문 형식(템플릿) — 형식이 정해지면 이 함수만 수정하면 됩니다 ▼▼▼
+  function buildConsultMessage(d) {
+    return [
+      '■ 철거의 정석 AI견적 상담 신청',
+      '',
+      `· 이름/업체명: ${d.name}`,
+      `· 연락처: ${d.contact}`,
+      `· 주소: ${d.address}`,
+      '',
+      '■ 견적 조건',
+      `· 공간 유형: ${d.building}`,
+      `· 철거 방식: ${d.mode} (${d.area}평)`,
+      `· 철거 범위: ${d.scope}`,
+      `· 원상복구: ${d.restore}`,
+      `· 폐기물: ${d.waste} / 반출: ${d.transport}`,
+      '',
+      '■ 견적 내역',
+      ...d.lines.map(l => `· ${l}`),
+      `· 직접공사비: ${fmt(d.directSum)}`,
+      `· VAT(10%): ${fmt(d.vat)}`,
+      `· 예상 총 견적: ${fmt(d.total)}`,
+      '',
+      `신청 시각: ${new Date().toLocaleString('ko-KR')}`,
+    ].join('\n');
+  }
+  // ▲▲▲ 템플릿 끝 ▲▲▲
+
+  // 3) 발송
+  async function onSubmit() {
+    const btn = qs('goSubmitBtn');
+    if (btn && btn.dataset.sending === '1') return;  // 중복 제출 방지
+    if (!CONSULT.accessKey || CONSULT.accessKey.indexOf('REPLACE') === 0) {
+      showToast('이메일 발송 설정(Access Key)이 아직 연결되지 않았어요.');
+      return;
+    }
+    const d = collectConsultData();
+    if (btn) { btn.dataset.sending = '1'; btn.disabled = true; btn.textContent = '접수 중…'; }
+    try {
+      const res = await fetch(CONSULT.endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          access_key: CONSULT.accessKey,
+          subject: `[상담신청] ${d.name} / ${d.building} ${d.area}평 / ${fmt(d.total)}`,
+          from_name: '철거의 정석 AI견적',
+          replyto: CONSULT.toEmail,
+          // 개별 필드(검색·정렬용)
+          이름: d.name, 연락처: d.contact, 주소: d.address,
+          공간유형: d.building, 철거방식: d.mode, 평수: d.area,
+          철거범위: d.scope, 원상복구: d.restore, 예상견적: fmt(d.total),
+          // 사람이 읽는 본문
+          message: buildConsultMessage(d),
+          botcheck: '',
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (res.ok && json.success) {
+        showToast('상담 신청이 접수되었습니다. 곧 연락드리겠습니다.');
+        if (btn) btn.textContent = '접수 완료';
+      } else {
+        throw new Error(json.message || 'send failed');
+      }
+    } catch (err) {
+      showToast('접수 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.');
+      if (btn) { btn.disabled = false; btn.textContent = '상담 신청하기'; }
+    } finally {
+      if (btn) btn.dataset.sending = '0';
+    }
   }
 
   function onPrint() {
