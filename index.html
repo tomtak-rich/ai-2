@@ -1671,28 +1671,39 @@
     <div class="step-progress" data-progress></div>
     <div class="flow-head">
       <span class="step-label">Step 02</span>
-      <h2>평수와 철거 범위</h2>
-      <p>평수를 입력하고 철거 항목을 선택하세요.</p>
+      <h2>평수와 철거 방식</h2>
+      <p>평수를 입력하고 철거 방식을 선택하세요.</p>
     </div>
     <div class="flow-question">Q1. 평수 입력</div>
     <label class="big-input-wrap">
       <input class="big-input" id="areaVal" type="number" min="1" max="9999" value="30" inputmode="numeric">
       <span class="unit">평</span>
     </label>
-    <div class="flow-question">Q2. 철거 범위 선택 (중복 가능)</div>
-    <div class="option-grid" id="works">
-      <button class="option-card" data-key="ceiling">
-        <span class="ico"><svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M5 6v3M9 6v3M13 6v3M17 6v3M21 6v3"/><path d="M3 15h18M3 20h18"/></svg></span>천장 철거
+    <div class="flow-question">Q2. 철거 방식 선택</div>
+    <div class="option-grid two" id="mode">
+      <button class="option-card on" data-value="full">
+        <span class="ico"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-5h6v5"/><path d="M9 10h.01M15 10h.01"/></svg></span>전체 철거
       </button>
-      <button class="option-card on" data-key="wall">
-        <span class="ico"><svg viewBox="0 0 24 24"><path d="M3 4h18v6H3zM3 10h18v6H3zM3 16h18v4H3z"/><path d="M9 4v6M15 10v6M7 16v4M13 16v4M19 16v4"/></svg></span>벽체 철거
+      <button class="option-card" data-value="partial">
+        <span class="ico"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V9h6v12"/><path d="M11 21V5h8v16"/><path d="M14 9h2M14 13h2"/></svg></span>부분 철거
       </button>
-      <button class="option-card on" data-key="floor">
-        <span class="ico"><svg viewBox="0 0 24 24"><path d="M3 17h18M3 12h18M3 7h18"/><path d="M7 7v10M13 7v10M19 7v10"/></svg></span>바닥 철거
-      </button>
-      <button class="option-card" data-key="kitchen">
-        <span class="ico"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16"/><circle cx="8" cy="7" r=".7" fill="currentColor"/><circle cx="12" cy="7" r=".7" fill="currentColor"/><path d="M8 14v4M16 14v4"/></svg></span>주방 철거
-      </button>
+    </div>
+    <div id="worksBlock" style="display:none">
+      <div class="flow-question">Q3. 철거 범위 선택 (중복 가능)</div>
+      <div class="option-grid" id="works">
+        <button class="option-card" data-key="ceiling">
+          <span class="ico"><svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M5 6v3M9 6v3M13 6v3M17 6v3M21 6v3"/><path d="M3 15h18M3 20h18"/></svg></span>천장 철거
+        </button>
+        <button class="option-card on" data-key="wall">
+          <span class="ico"><svg viewBox="0 0 24 24"><path d="M3 4h18v6H3zM3 10h18v6H3zM3 16h18v4H3z"/><path d="M9 4v6M15 10v6M7 16v4M13 16v4M19 16v4"/></svg></span>벽체 철거
+        </button>
+        <button class="option-card on" data-key="floor">
+          <span class="ico"><svg viewBox="0 0 24 24"><path d="M3 17h18M3 12h18M3 7h18"/><path d="M7 7v10M13 7v10M19 7v10"/></svg></span>바닥 철거
+        </button>
+        <button class="option-card" data-key="kitchen">
+          <span class="ico"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16"/><circle cx="8" cy="7" r=".7" fill="currentColor"/><circle cx="12" cy="7" r=".7" fill="currentColor"/><path d="M8 14v4M16 14v4"/></svg></span>주방 철거
+        </button>
+      </div>
     </div>
     <div class="flow-actions">
       <button class="flow-btn secondary" onclick="goStep(1)">이전</button>
@@ -1707,6 +1718,32 @@
     <div class="step-progress" data-progress></div>
     <div class="flow-head">
       <span class="step-label">Step 03</span>
+      <h2>원상복구 여부</h2>
+      <p>철거 후 원래 상태로 되돌리는 원상복구까지 필요하신가요?</p>
+    </div>
+    <div class="flow-question">Q1. 원상복구가 필요하신가요?</div>
+    <div class="option-grid two" id="restore">
+      <button class="option-card" data-value="yes">
+        <span class="ico"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></span>네, 필요해요
+      </button>
+      <button class="option-card on" data-value="no">
+        <span class="ico"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/></svg></span>아니요 (철거만)
+      </button>
+    </div>
+    <p class="support-disclaimer">원상복구는 임대 계약상 원래 상태로 되돌리는 기본 마감(미장·도장·바닥 등) 복구를 포함합니다. 정확한 범위는 현장 상담에서 확정됩니다.</p>
+    <div class="flow-actions">
+      <button class="flow-btn secondary" onclick="goStep(2)">이전</button>
+      <button class="flow-btn" onclick="goStep(4)">다음 단계로</button>
+    </div>
+  </section>
+
+  <section class="step-panel" data-step="4">
+    <div class="ticker-row">
+      <div class="estimate-ticker"><span class="dot"></span>현재까지 예상 견적<strong class="mono" data-ticker>₩0</strong></div>
+    </div>
+    <div class="step-progress" data-progress></div>
+    <div class="flow-head">
+      <span class="step-label">Step 04</span>
       <h2>폐기물 및 반출 환경</h2>
       <p>폐기물 처리 여부와 반출 수단을 알려주세요.</p>
     </div>
@@ -1731,15 +1768,15 @@
       </button>
     </div>
     <div class="flow-actions">
-      <button class="flow-btn secondary" onclick="goStep(2)">이전</button>
-      <button class="flow-btn" onclick="goStep(4)">정보 입력하기</button>
+      <button class="flow-btn secondary" onclick="goStep(3)">이전</button>
+      <button class="flow-btn" onclick="goStep(5)">정보 입력하기</button>
     </div>
   </section>
 
-  <section class="step-panel" data-step="4">
+  <section class="step-panel" data-step="5">
     <div class="step-progress" data-progress></div>
     <div class="flow-head">
-      <span class="step-label">Step 04</span>
+      <span class="step-label">Step 05</span>
       <h2>견적 확인 정보 입력</h2>
       <p>예상 견적을 함께 확인하면서 정보를 입력해 주세요.</p>
     </div>
@@ -1790,16 +1827,16 @@
       </aside>
     </div>
     <div class="flow-actions">
-      <button class="flow-btn secondary" onclick="goStep(3)">이전 수정</button>
+      <button class="flow-btn secondary" onclick="goStep(4)">이전 수정</button>
       <button class="flow-btn secondary" id="goDetailBtn" disabled onclick="goEstimateAfterInfo()">세부 견적서 확인하기</button>
       <button class="flow-btn" id="goSubmitBtn" disabled onclick="submitAfterInfo()">상담 신청하기</button>
     </div>
   </section>
 
-  <section class="step-panel" data-step="5">
+  <section class="step-panel" data-step="6">
     <div class="step-progress" data-progress></div>
     <div class="flow-head">
-      <span class="step-label">Step 05</span>
+      <span class="step-label">Step 06</span>
       <h2>세부 견적서</h2>
       <p>입력하신 조건을 바탕으로 산출된 공정별 상세 견적입니다.</p>
     </div>
@@ -1850,7 +1887,7 @@
       <p class="support-disclaimer">*서울 지역 300만원 추가로 지원됩니다. 지자체별로 지원금 차이가 있으니 자세한 내용은 고객센터(1555-6205)에 상담을 권장드립니다.</p>
     </div>
     <div class="flow-actions">
-      <button class="flow-btn secondary" onclick="goStep(4)">이전</button>
+      <button class="flow-btn secondary" onclick="goStep(5)">이전</button>
       <button class="flow-btn" onclick="onSubmit()">상담 신청하기</button>
     </div>
   </section>
@@ -1984,15 +2021,15 @@
     ASBESTOS_ADD: 700000,    // 석면: DB 조사 30~40만 / 철거 250만 이원화, 데이터 희소로 유지
   };
 
-  // 작업 항목별 단가(가산) — 공개 단가표(2026-07) 기반. 인력비에 더해지는 마감/항목 철거비.
-  // ㎡→평 환산(1평≈3.3㎡) 및 실무 견적 예시를 반영해 '평당 가산 단가'로 산정.
-  const WORK_UNIT = {
-    ceiling: { label: '천장 철거', won: 5000,  unit: '평', desc: '텍스·SMC·달대 천장 해체' },   // 천장텍스 2,500~10,000/㎡
-    wall:    { label: '벽체 철거', won: 13000, unit: '평', desc: '경량·조적 칸막이 벽체 해체' }, // 벽돌/가벽 해체 실무 단가
-    floor:   { label: '바닥 철거', won: 8000,  unit: '평', desc: '타일·에폭시·장판 제거' },      // 도배장판 25~35천/평, 타일 45~60천/평
-    kitchen: { label: '주방 철거', won: 400000, unit: '식', flat: true, desc: '주방가구·설비 일괄 철거' }, // 주방가구 35~45만/식
+  // 부분철거 항목별 독립단가 — 해당 항목만 철거할 때의 '평당(또는 식) 철거비'(인력·해체 포함).
+  // 공개 단가표(2026-07) 기반. 전체철거와 달리 선택 항목만 계산해 부분철거가 저렴해지도록.
+  const PART_UNIT = {
+    ceiling: { label: '천장 철거', won: 10000, unit: '평', desc: '텍스·SMC·달대 해체' },   // 천장텍스 2,500~10,000/㎡
+    wall:    { label: '벽체 철거', won: 22000, unit: '평', desc: '경량·조적 칸막이 해체' }, // 가벽·조적 해체
+    floor:   { label: '바닥 철거', won: 18000, unit: '평', desc: '타일·에폭시·장판 제거' }, // 도배장판 25~35천/평, 타일 45~60천/평
+    kitchen: { label: '주방 철거', won: 350000, unit: '식', flat: true, desc: '주방가구·설비 일괄' }, // 주방가구 35~45만/식
   };
-  // 건물유형별 항목단가 배율 — 유형에 따라 마감 난이도·설비량이 달라 항목 단가를 차등 적용.
+  // 건물유형별 항목단가 배율 — 유형에 따라 마감 난이도·설비량이 달라 단가를 차등 적용.
   const WORK_BUILDING_MUL = {
     house:  0.90,  // 주거: 마감 단순
     shop:   1.00,  // 매장/상가: 기준
@@ -2003,10 +2040,13 @@
     clinic: 1.25,  // 병의원: 진료부스·배관·특수벽
     etc:    1.00,
   };
+  const RESTORE_PER_PYEONG = 30000;  // 원상복구(기본 마감·미장·도장 복구) 평당 단가
 
   const state = {
     building: { mul: 1.0, label: '매장/상가', key: 'shop' },
     demolition: { k: 1.0, label: '인테리어철거', key: 'interior' },
+    mode: 'full',        // 'full' 전체철거 | 'partial' 부분철거
+    restore: false,      // 원상복구(기본 마감 복구) 포함 여부
     region: { mul: 1.0, label: '수도권' },
     area: 30,
     floor: 2,
@@ -2017,7 +2057,7 @@
     support: 0,
   };
 
-  const MAX_STEP = 5;
+  const MAX_STEP = 6;
   let currentStep = 0;
   let lastTotal = 0;
   const fmt = n => '₩' + Math.round(n).toLocaleString('ko-KR');
@@ -2152,7 +2192,7 @@
       showToast('입력하지 않았거나 형식이 잘못된 항목이 있어요.');
       return;
     }
-    goStep(5);
+    goStep(6);
   }
 
   function submitAfterInfo() {
@@ -2234,6 +2274,22 @@
     state.works = next;
   });
 
+  function toggleWorksBlock() {
+    const wb = qs('worksBlock');
+    if (wb) wb.style.display = state.mode === 'partial' ? '' : 'none';
+  }
+
+  bindSingleGroup('mode', btn => {
+    state.mode = btn.dataset.value; // 'full' | 'partial'
+    toggleWorksBlock();
+  });
+
+  bindSingleGroup('restore', btn => {
+    state.restore = btn.dataset.value === 'yes';
+  });
+
+  toggleWorksBlock();
+
   bindSingleGroup('waste', btn => {
     state.waste = btn.dataset.value !== 'no';
   });
@@ -2268,47 +2324,28 @@
     const K = state.demolition.k;
     const B = state.building.mul;
     const R = state.region.mul;
-    const isFull = state.demolition.key === 'full';
-    const isSign = state.demolition.key === 'sign';
+    const isPartial = state.mode === 'partial';
 
-    // 철거 범위를 하나도 선택하지 않으면 견적 0원 (철거할 대상이 없음)
-    const hasWork = ['ceiling', 'wall', 'floor', 'kitchen'].some(k => state.works[k]);
-    if (!isSign && !hasWork) {
+    // 부분철거인데 범위를 하나도 선택하지 않으면 견적 0원 (철거할 대상이 없음)
+    const selectedWorks = ['ceiling', 'wall', 'floor', 'kitchen'].filter(k => state.works[k]);
+    if (isPartial && selectedWorks.length === 0) {
       return { direct: [], directSum: 0, indirect: 0, subtotal: 0, vat: 0, total: 0, empty: true };
     }
 
-    const intensity = P * K * B;
-    const skilled = Math.max(1, Math.round(intensity / 14));
-    const helper  = Math.max(1, Math.round(intensity / 9));
-    const mixedTrucks = Math.max(1, Math.round((P * K) / 14));
-
-    const woodNeeded = (state.demolition.key === 'interior' ||
-                       state.demolition.key === 'restore' ||
-                       state.demolition.key === 'closing') && !isSign ? 1 : 0;
-
-    const concreteTrucks = (isFull ? Math.max(1, Math.round(P / 18)) : 0)
-                         + (state.works.concrete ? 1 : 0);
-
     const ladder = state.transport === 'ladder';
-    const sky = (state.works.sign || state.floor >= 4 || isSign) ? 1 : 0;
-    const asbestos = state.works.asbestos ? 1 : 0;
-
+    const sky = state.floor >= 4 ? 1 : 0;
+    const wbMul = WORK_BUILDING_MUL[state.building.key] ?? 1.0;
     const direct = [];
-    if (isSign) {
-      direct.push({ item: '간판·시트지 철거 인력', desc: '기공 2명', qty: 2, unit: '명', unitPrice: PRICE.LABOR_SKILLED, amount: 2 * PRICE.LABOR_SKILLED });
-      direct.push({ item: '스카이 장비', desc: '외부 작업', qty: 1, unit: '대', unitPrice: PRICE.SKY, amount: PRICE.SKY });
-    } else {
-      direct.push({ item: '철거인력', desc: '기공', qty: skilled, unit: '명', unitPrice: PRICE.LABOR_SKILLED, amount: skilled * PRICE.LABOR_SKILLED });
-      direct.push({ item: '철거인력', desc: '조공', qty: helper, unit: '명', unitPrice: PRICE.LABOR_HELPER, amount: helper * PRICE.LABOR_HELPER });
 
-      // 작업 항목별 단가(가산) — 선택한 철거 범위마다 건물유형별 항목단가를 적용
-      const wbMul = WORK_BUILDING_MUL[state.building.key] ?? 1.0;
-      ['ceiling', 'wall', 'floor', 'kitchen'].forEach(k => {
-        if (!state.works[k]) return;
-        const w = WORK_UNIT[k];
+    if (isPartial) {
+      // ── 부분철거: 선택한 항목만 독립단가로 계산 (인력·해체비 포함) ──
+      let areaWorkPyeong = 0;   // 폐기물 산정용 면적 가중
+      selectedWorks.forEach(k => {
+        const w = PART_UNIT[k];
         if (!w) return;
         const unitPrice = Math.round(w.won * wbMul);
         const qty = w.flat ? 1 : P;
+        if (!w.flat) areaWorkPyeong += P;
         direct.push({
           item: w.label,
           desc: `${w.desc} · ${state.building.label}`,
@@ -2318,16 +2355,33 @@
           amount: unitPrice * qty,
         });
       });
-
+      // 폐기물: 실제 철거 면적에 비례 (전체철거보다 적게)
+      if (state.waste) {
+        const base = areaWorkPyeong + (state.works.kitchen ? 8 : 0);
+        const mixedTrucks = base > 0 ? Math.max(1, Math.round(base / 45)) : 0;
+        if (mixedTrucks) direct.push({ item: '혼합폐기물', desc: '2.5톤', qty: mixedTrucks, unit: '대', unitPrice: PRICE.WASTE_MIXED, amount: mixedTrucks * PRICE.WASTE_MIXED });
+      }
+    } else {
+      // ── 전체철거: 면적 기반 인력·폐기물 일괄 모델 (모든 마감·설비 포함) ──
+      const intensity = P * K * B;
+      const skilled = Math.max(1, Math.round(intensity / 14));
+      const helper  = Math.max(1, Math.round(intensity / 9));
+      const mixedTrucks = Math.max(1, Math.round((P * K) / 14));
+      direct.push({ item: '철거인력', desc: '기공', qty: skilled, unit: '명', unitPrice: PRICE.LABOR_SKILLED, amount: skilled * PRICE.LABOR_SKILLED });
+      direct.push({ item: '철거인력', desc: '조공', qty: helper, unit: '명', unitPrice: PRICE.LABOR_HELPER, amount: helper * PRICE.LABOR_HELPER });
       if (state.waste) {
         direct.push({ item: '혼합폐기물', desc: '2.5톤', qty: mixedTrucks, unit: '대', unitPrice: PRICE.WASTE_MIXED, amount: mixedTrucks * PRICE.WASTE_MIXED });
-        if (woodNeeded) direct.push({ item: '폐목재', desc: '2.5톤', qty: 1, unit: '식', unitPrice: PRICE.WASTE_WOOD, amount: PRICE.WASTE_WOOD });
-        if (concreteTrucks) direct.push({ item: '폐콘크리트', desc: '', qty: concreteTrucks, unit: '대', unitPrice: PRICE.WASTE_CONCRETE, amount: concreteTrucks * PRICE.WASTE_CONCRETE });
+        direct.push({ item: '폐목재', desc: '2.5톤', qty: 1, unit: '식', unitPrice: PRICE.WASTE_WOOD, amount: PRICE.WASTE_WOOD });
       }
-      if (sky) direct.push({ item: '스카이 장비', desc: '외벽·고소작업', qty: 1, unit: '대', unitPrice: PRICE.SKY, amount: PRICE.SKY });
-      if (ladder) direct.push({ item: '사다리차', desc: `${state.floor}층 운반`, qty: 1, unit: '대', unitPrice: PRICE.LADDER, amount: PRICE.LADDER });
-      if (state.transport === 'stairs') direct.push({ item: '계단 반출 할증', desc: `${state.floor}층 계단 운반`, qty: 1, unit: '식', unitPrice: 300000, amount: 300000 });
-      if (asbestos) direct.push({ item: '석면 처리', desc: '전문 폐기', qty: 1, unit: '식', unitPrice: PRICE.ASBESTOS_ADD, amount: PRICE.ASBESTOS_ADD });
+    }
+
+    // 공통: 장비·반출 + 원상복구
+    if (sky) direct.push({ item: '스카이 장비', desc: '외벽·고소작업', qty: 1, unit: '대', unitPrice: PRICE.SKY, amount: PRICE.SKY });
+    if (ladder) direct.push({ item: '사다리차', desc: `${state.floor}층 운반`, qty: 1, unit: '대', unitPrice: PRICE.LADDER, amount: PRICE.LADDER });
+    if (state.transport === 'stairs') direct.push({ item: '계단 반출 할증', desc: `${state.floor}층 계단 운반`, qty: 1, unit: '식', unitPrice: 300000, amount: 300000 });
+    if (state.restore) {
+      const unitPrice = Math.round(RESTORE_PER_PYEONG * wbMul);
+      direct.push({ item: '원상복구', desc: '기본 마감·미장·도장 복구', qty: P, unit: '평', unitPrice, amount: unitPrice * P });
     }
 
     direct.forEach(d => { d.amount = Math.round(d.amount * R); });
@@ -2343,15 +2397,19 @@
 
   function buildScope() {
     const map = {
-      floor:    '바닥(고무매트·에폭시) 철거 후 샌딩',
-      wall:     '가설벽체 · 습식 단올림 철거',
-      ceiling:  '천정 철거',
-      sign:     '간판 · 시트지 제거',
-      concrete: '콘크리트 · 구조 철거',
-      asbestos: '석면 함유 자재 전문 처리',
+      ceiling:  '천장 철거',
+      wall:     '벽체(가설·조적) 철거',
+      floor:    '바닥(타일·에폭시·장판) 철거',
+      kitchen:  '주방가구·설비 철거',
     };
-    const items = Object.keys(state.works).filter(k => state.works[k]).map(k => map[k]).filter(Boolean);
-    if (items.length === 0) items.push(`${state.demolition.label} 일반 시공`);
+    let items;
+    if (state.mode === 'partial') {
+      items = ['ceiling', 'wall', 'floor', 'kitchen'].filter(k => state.works[k]).map(k => map[k]);
+      if (items.length === 0) items.push('부분 철거 항목 미선택');
+    } else {
+      items = ['전체 철거 (모든 마감·설비 일괄)'];
+    }
+    if (state.restore) items.push('원상복구 (기본 마감 복구 포함)');
     return items;
   }
 
