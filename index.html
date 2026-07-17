@@ -1984,8 +1984,28 @@
     ASBESTOS_ADD: 700000,    // 석면: DB 조사 30~40만 / 철거 250만 이원화, 데이터 희소로 유지
   };
 
+  // 작업 항목별 단가(가산) — 공개 단가표(2026-07) 기반. 인력비에 더해지는 마감/항목 철거비.
+  // ㎡→평 환산(1평≈3.3㎡) 및 실무 견적 예시를 반영해 '평당 가산 단가'로 산정.
+  const WORK_UNIT = {
+    ceiling: { label: '천장 철거', won: 5000,  unit: '평', desc: '텍스·SMC·달대 천장 해체' },   // 천장텍스 2,500~10,000/㎡
+    wall:    { label: '벽체 철거', won: 13000, unit: '평', desc: '경량·조적 칸막이 벽체 해체' }, // 벽돌/가벽 해체 실무 단가
+    floor:   { label: '바닥 철거', won: 8000,  unit: '평', desc: '타일·에폭시·장판 제거' },      // 도배장판 25~35천/평, 타일 45~60천/평
+    kitchen: { label: '주방 철거', won: 400000, unit: '식', flat: true, desc: '주방가구·설비 일괄 철거' }, // 주방가구 35~45만/식
+  };
+  // 건물유형별 항목단가 배율 — 유형에 따라 마감 난이도·설비량이 달라 항목 단가를 차등 적용.
+  const WORK_BUILDING_MUL = {
+    house:  0.90,  // 주거: 마감 단순
+    shop:   1.00,  // 매장/상가: 기준
+    office: 0.85,  // 사무실/학원: 경량칸막이·카펫 위주로 가벼움
+    food:   1.30,  // 식당/카페: 주방·닥트·방수·설비 과다
+    beauty: 1.15,  // 미용/뷰티: 거울·샴푸대·배관
+    play:   1.20,  // PC방/노래방: 방음벽·조립부스
+    clinic: 1.25,  // 병의원: 진료부스·배관·특수벽
+    etc:    1.00,
+  };
+
   const state = {
-    building: { mul: 1.0, label: '매장/상가' },
+    building: { mul: 1.0, label: '매장/상가', key: 'shop' },
     demolition: { k: 1.0, label: '인테리어철거', key: 'interior' },
     region: { mul: 1.0, label: '수도권' },
     area: 30,
@@ -2203,6 +2223,7 @@
   bindSingleGroup('building', btn => {
     state.building.mul = parseFloat(btn.dataset.mul);
     state.building.label = btn.dataset.label || btn.textContent.trim();
+    state.building.key = btn.dataset.key || 'shop';
   });
 
   bindMultiGroup('works', root => {
@@ -2273,6 +2294,25 @@
     } else {
       direct.push({ item: '철거인력', desc: '기공', qty: skilled, unit: '명', unitPrice: PRICE.LABOR_SKILLED, amount: skilled * PRICE.LABOR_SKILLED });
       direct.push({ item: '철거인력', desc: '조공', qty: helper, unit: '명', unitPrice: PRICE.LABOR_HELPER, amount: helper * PRICE.LABOR_HELPER });
+
+      // 작업 항목별 단가(가산) — 선택한 철거 범위마다 건물유형별 항목단가를 적용
+      const wbMul = WORK_BUILDING_MUL[state.building.key] ?? 1.0;
+      ['ceiling', 'wall', 'floor', 'kitchen'].forEach(k => {
+        if (!state.works[k]) return;
+        const w = WORK_UNIT[k];
+        if (!w) return;
+        const unitPrice = Math.round(w.won * wbMul);
+        const qty = w.flat ? 1 : P;
+        direct.push({
+          item: w.label,
+          desc: `${w.desc} · ${state.building.label}`,
+          qty,
+          unit: w.unit,
+          unitPrice,
+          amount: unitPrice * qty,
+        });
+      });
+
       if (state.waste) {
         direct.push({ item: '혼합폐기물', desc: '2.5톤', qty: mixedTrucks, unit: '대', unitPrice: PRICE.WASTE_MIXED, amount: mixedTrucks * PRICE.WASTE_MIXED });
         if (woodNeeded) direct.push({ item: '폐목재', desc: '2.5톤', qty: 1, unit: '식', unitPrice: PRICE.WASTE_WOOD, amount: PRICE.WASTE_WOOD });
