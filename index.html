@@ -2015,13 +2015,25 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  // ===== 상담 신청 이메일 발송 설정 =====
-  // Web3Forms(무료)로 지정 이메일에 상담 신청 내용을 발송합니다.
-  // ▼ https://web3forms.com 에서 dnslwkatn1@gmail.com 로 발급받은 Access Key를 붙여넣으세요.
-  const CONSULT = {
-    endpoint: 'https://api.web3forms.com/submit',
-    accessKey: 'REPLACE_WITH_WEB3FORMS_ACCESS_KEY',  // ← 발급받은 키로 교체
-    toEmail: 'dnslwkatn1@gmail.com',                 // 신청이 도착할 이메일
+  // ===== 상담 신청 → 구글폼 제출 설정 =====
+  // 구글폼으로 상담 신청 내용을 전송합니다. 응답은 구글폼/스프레드시트에 쌓입니다.
+  // ▼ 구글폼을 만든 뒤 아래 action(응답 URL)과 각 항목의 entry.ID 를 채워주세요.
+  //   - action: 폼 URL의 '/viewform' 을 '/formResponse' 로 바꾼 주소
+  //   - entry ID: 폼 우상단 ⋮ → '미리 채워진 링크 가져오기'로 각 항목 값 입력 후 생성된 URL에서 entry.xxxx 확인
+  const GFORM = {
+    action: 'https://docs.google.com/forms/d/e/FORM_ID/formResponse',
+    fields: {
+      name:     'entry.0000000001',  // 이름/업체명
+      contact:  'entry.0000000002',  // 연락처
+      address:  'entry.0000000003',  // 주소
+      building: 'entry.0000000004',  // 공간 유형
+      mode:     'entry.0000000005',  // 철거 방식
+      area:     'entry.0000000006',  // 평수
+      scope:    'entry.0000000007',  // 철거 범위
+      restore:  'entry.0000000008',  // 원상복구
+      total:    'entry.0000000009',  // 예상 견적
+      detail:   'entry.0000000010',  // 상세 내역(전체 본문)
+    },
   };
 
   const PRICE = {
@@ -2604,41 +2616,35 @@
   }
   // ▲▲▲ 템플릿 끝 ▲▲▲
 
-  // 3) 발송
+  // 3) 구글폼으로 제출
   async function onSubmit() {
     const btn = qs('goSubmitBtn');
     if (btn && btn.dataset.sending === '1') return;  // 중복 제출 방지
-    if (!CONSULT.accessKey || CONSULT.accessKey.indexOf('REPLACE') === 0) {
-      showToast('이메일 발송 설정(Access Key)이 아직 연결되지 않았어요.');
+    if (!GFORM.action || GFORM.action.indexOf('FORM_ID') > -1) {
+      showToast('구글폼 연결이 아직 설정되지 않았어요.');
       return;
     }
     const d = collectConsultData();
+    const f = GFORM.fields;
+    const fd = new FormData();
+    const put = (entry, val) => { if (entry && entry.indexOf('0000') === -1) fd.append(entry, val); };
+    put(f.name, d.name);
+    put(f.contact, d.contact);
+    put(f.address, d.address);
+    put(f.building, d.building);
+    put(f.mode, `${d.mode} (${d.area}평)`);
+    put(f.area, d.area);
+    put(f.scope, d.scope);
+    put(f.restore, d.restore);
+    put(f.total, fmt(d.total));
+    put(f.detail, buildConsultMessage(d));
+
     if (btn) { btn.dataset.sending = '1'; btn.disabled = true; btn.textContent = '접수 중…'; }
     try {
-      const res = await fetch(CONSULT.endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({
-          access_key: CONSULT.accessKey,
-          subject: `[상담신청] ${d.name} / ${d.building} ${d.area}평 / ${fmt(d.total)}`,
-          from_name: '철거의 정석 AI견적',
-          replyto: CONSULT.toEmail,
-          // 개별 필드(검색·정렬용)
-          이름: d.name, 연락처: d.contact, 주소: d.address,
-          공간유형: d.building, 철거방식: d.mode, 평수: d.area,
-          철거범위: d.scope, 원상복구: d.restore, 예상견적: fmt(d.total),
-          // 사람이 읽는 본문
-          message: buildConsultMessage(d),
-          botcheck: '',
-        }),
-      });
-      const json = await res.json().catch(() => ({}));
-      if (res.ok && json.success) {
-        showToast('상담 신청이 접수되었습니다. 곧 연락드리겠습니다.');
-        if (btn) btn.textContent = '접수 완료';
-      } else {
-        throw new Error(json.message || 'send failed');
-      }
+      // 구글폼은 CORS 응답을 막으므로 no-cors로 전송(응답은 읽을 수 없지만 제출은 기록됨)
+      await fetch(GFORM.action, { method: 'POST', mode: 'no-cors', body: fd });
+      showToast('상담 신청이 접수되었습니다. 곧 연락드리겠습니다.');
+      if (btn) btn.textContent = '접수 완료';
     } catch (err) {
       showToast('접수 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.');
       if (btn) { btn.disabled = false; btn.textContent = '상담 신청하기'; }
