@@ -2363,12 +2363,15 @@
       }
     } else {
       // ── 전체철거: 면적 기반 인력·폐기물 일괄 모델 (모든 마감·설비 포함) ──
-      const intensity = P * K * B;
-      const skilled = Math.max(1, Math.round(intensity / 14));
-      const helper  = Math.max(1, Math.round(intensity / 9));
+      // 인력 '명 수'는 면적으로 산정하고, 건물유형 난이도(wbMul)는 인건비 단가에 반영해
+      // 유형별로 금액이 확실히 달라지도록 함(반올림으로 차이가 사라지던 문제 해결).
+      const skilled = Math.max(1, Math.round(P / 14));
+      const helper  = Math.max(1, Math.round(P / 9));
       const mixedTrucks = Math.max(1, Math.round((P * K) / 14));
-      direct.push({ item: '철거인력', desc: '기공', qty: skilled, unit: '명', unitPrice: PRICE.LABOR_SKILLED, amount: skilled * PRICE.LABOR_SKILLED });
-      direct.push({ item: '철거인력', desc: '조공', qty: helper, unit: '명', unitPrice: PRICE.LABOR_HELPER, amount: helper * PRICE.LABOR_HELPER });
+      const sPrice = Math.round(PRICE.LABOR_SKILLED * wbMul);
+      const hPrice = Math.round(PRICE.LABOR_HELPER * wbMul);
+      direct.push({ item: '철거인력', desc: `기공 · ${state.building.label}`, qty: skilled, unit: '명', unitPrice: sPrice, amount: skilled * sPrice });
+      direct.push({ item: '철거인력', desc: `조공 · ${state.building.label}`, qty: helper, unit: '명', unitPrice: hPrice, amount: helper * hPrice });
       if (state.waste) {
         direct.push({ item: '혼합폐기물', desc: '2.5톤', qty: mixedTrucks, unit: '대', unitPrice: PRICE.WASTE_MIXED, amount: mixedTrucks * PRICE.WASTE_MIXED });
         direct.push({ item: '폐목재', desc: '2.5톤', qty: 1, unit: '식', unitPrice: PRICE.WASTE_WOOD, amount: PRICE.WASTE_WOOD });
