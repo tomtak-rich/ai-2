@@ -37,10 +37,25 @@ var Q = {
 };
 
 function onFormSubmit(e) {
-  var nv = (e && e.namedValues) ? e.namedValues : {};
+  // 트리거 종류에 따라 이벤트 구조가 다르므로 둘 다 지원:
+  //  - 폼에 직접 붙인 트리거: e.response (FormResponse)
+  //  - 스프레드시트에 붙인 트리거: e.namedValues (제목→값)
+  var map = {};
+  if (e && e.response && typeof e.response.getItemResponses === 'function') {
+    var items = e.response.getItemResponses();
+    for (var i = 0; i < items.length; i++) {
+      var resp = items[i].getResponse();
+      if (Array.isArray(resp)) resp = resp.filter(String).join(', ');
+      map[items[i].getItem().getTitle()] = resp;
+    }
+  } else if (e && e.namedValues) {
+    for (var k in e.namedValues) {
+      var v = e.namedValues[k];
+      map[k] = Array.isArray(v) ? v.filter(String).join(', ') : v;
+    }
+  }
   var get = function (title) {
-    var v = nv[title];
-    if (Array.isArray(v)) v = v.filter(String).join(', ');
+    var v = map[title];
     return (v == null ? '' : String(v)).trim();
   };
   var d = {
