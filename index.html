@@ -2271,6 +2271,12 @@
     const isFull = state.demolition.key === 'full';
     const isSign = state.demolition.key === 'sign';
 
+    // 철거 범위를 하나도 선택하지 않으면 견적 0원 (철거할 대상이 없음)
+    const hasWork = ['ceiling', 'wall', 'floor', 'kitchen'].some(k => state.works[k]);
+    if (!isSign && !hasWork) {
+      return { direct: [], directSum: 0, indirect: 0, subtotal: 0, vat: 0, total: 0, empty: true };
+    }
+
     const intensity = P * K * B;
     const skilled = Math.max(1, Math.round(intensity / 14));
     const helper  = Math.max(1, Math.round(intensity / 9));
