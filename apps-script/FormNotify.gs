@@ -10,6 +10,10 @@
  * 4) 권한 승인(본인 계정) → 완료. 이후 신청마다 메일이 자동 발송됩니다.
  *
  * [형식 수정] 메일 디자인/문구는 buildHtml() 함수만 고치면 됩니다.
+ *
+ * 이 스크립트는 폼 질문 '제목'을 하드코딩해서 찾지 않고,
+ * 실제 응답을 폼에 표시된 순서대로 그대로 읽어 모두 렌더링합니다.
+ * → 폼 질문 문구를 바꿔도 메일에서 값이 빠지지 않습니다.
  */
 
 var NOTIFY_TO   = 'dnslwkatn1@gmail.com';   // 받는 메일
@@ -18,89 +22,67 @@ var SITE_LABEL  = 'AI 견적 상세페이지';
 var BRAND_COLOR = '#2F6BF6';
 var FORM_RESPONSES_URL = 'https://docs.google.com/forms/d/1R9ktuWKnXr0gydCTw2t0FoWHTxvinEEIMerusPqqdvY/edit#responses';
 
-// 폼 질문 제목 (폼에서 질문 문구를 바꾸면 여기도 동일하게 맞춰주세요)
-var Q = {
-  building:  '철거할 공간 유형',
-  area:      '평수 입력 (평)',
-  mode:      '철거 방식 선택',
-  scope:     '철거 범위 선택 (중복 가능)',
-  restore:   '원상복구가 필요하신가요?',
-  waste:     '폐기물 처리가 필요하신가요?',
-  transport: '반출 환경',
-  name:      '이름 / 업체명',
-  contact:   '연락처',
-  address:   '현장 주소',
-  detail:    '상세 주소',
-  total:     'AI 견적서에 표시된 예상 견적 금액 (선택)',
-  when:      '희망 공사 시기 (선택)',
-  note:      '기타 문의사항 (선택)'
-};
+// 제목(질문 문구)에 아래 단어가 들어가면 상단 요약(신청자/연락처)으로도 뽑아 씁니다. (부가 기능, 없어도 무방)
+var NAME_HINT    = ['이름', '업체'];
+var CONTACT_HINT = ['연락처', '전화', '휴대'];
 
 function onFormSubmit(e) {
+  // 폼에 표시된 순서대로 [{title, value}] 목록을 만든다.
   // 트리거 종류에 따라 이벤트 구조가 다르므로 둘 다 지원:
-  //  - 폼에 직접 붙인 트리거: e.response (FormResponse)
+  //  - 폼에 직접 붙인 트리거: e.response (FormResponse) → 질문 순서 보장
   //  - 스프레드시트에 붙인 트리거: e.namedValues (제목→값)
-  var map = {};
+  var rows = [];
   if (e && e.response && typeof e.response.getItemResponses === 'function') {
     var items = e.response.getItemResponses();
     for (var i = 0; i < items.length; i++) {
-      var resp = items[i].getResponse();
-      if (Array.isArray(resp)) resp = resp.filter(String).join(', ');
-      map[items[i].getItem().getTitle()] = resp;
+      rows.push({ title: items[i].getItem().getTitle(), value: normalize(items[i].getResponse()) });
     }
   } else if (e && e.namedValues) {
     for (var k in e.namedValues) {
-      var v = e.namedValues[k];
-      map[k] = Array.isArray(v) ? v.filter(String).join(', ') : v;
+      if (/타임스탬프|timestamp/i.test(k)) continue;
+      rows.push({ title: k, value: normalize(e.namedValues[k]) });
     }
   }
-  var get = function (title) {
-    var v = map[title];
-    return (v == null ? '' : String(v)).trim();
-  };
-  var d = {
-    building:  get(Q.building),
-    area:      get(Q.area),
-    mode:      get(Q.mode),
-    scope:     get(Q.scope),
-    restore:   get(Q.restore),
-    waste:     get(Q.waste),
-    transport: get(Q.transport),
-    name:      get(Q.name)    || '고객',
-    contact:   get(Q.contact),
-    address:   get(Q.address),
-    detail:    get(Q.detail),
-    total:     get(Q.total),
-    when:      get(Q.when),
-    note:      get(Q.note)
-  };
-  var now = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd HH:mm');
-  var subject = '[' + BRAND + '] 새 상담 신청 · ' + d.name + ' / ' + (d.building || '-') + ' ' + (d.area ? d.area + '평' : '');
 
-  GmailApp.sendEmail(NOTIFY_TO, subject, plainBody(d, now), {
+  // 상단 요약용(있으면 사용, 없으면 생략)
+  var name    = pick(rows, NAME_HINT)    || '고객';
+  var contact = pick(rows, CONTACT_HINT) || '';
+
+  var now = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd HH:mm');
+  var subject = '[' + BRAND + '] 새 상담 신청 · ' + name + (contact ? ' / ' + contact : '');
+
+  GmailApp.sendEmail(NOTIFY_TO, subject, plainBody(rows, name, now), {
     name: BRAND,
-    htmlBody: buildHtml(d, now)
+    htmlBody: buildHtml(rows, name, now)
   });
 }
 
-function plainBody(d, now) {
-  return [
-    BRAND + ' 새 상담 신청 (' + now + ')',
-    '이름/업체: ' + d.name,
-    '연락처: ' + d.contact,
-    '현장주소: ' + d.address + ' ' + d.detail,
-    '공간유형: ' + d.building,
-    '철거방식: ' + d.mode + ' (' + d.area + '평)',
-    '철거범위: ' + d.scope,
-    '원상복구: ' + d.restore + ' / 폐기물: ' + d.waste + ' / 반출: ' + d.transport,
-    '예상견적: ' + d.total,
-    '희망시기: ' + d.when,
-    '기타/상세: ' + d.note
-  ].join('\n');
+// 체크박스(배열)/공백 정리
+function normalize(v) {
+  if (Array.isArray(v)) v = v.filter(function (x) { return String(x).trim() !== ''; }).join(', ');
+  return (v == null ? '' : String(v)).trim();
+}
+
+// 제목에 힌트 단어가 포함된 첫 응답값을 반환
+function pick(rows, hints) {
+  for (var i = 0; i < rows.length; i++) {
+    for (var j = 0; j < hints.length; j++) {
+      if (rows[i].title.indexOf(hints[j]) > -1 && rows[i].value) return rows[i].value;
+    }
+  }
+  return '';
+}
+
+function plainBody(rows, name, now) {
+  var out = [BRAND + ' 새 상담 신청 (' + now + ')', ''];
+  for (var i = 0; i < rows.length; i++) {
+    if (rows[i].value) out.push(rows[i].title + ': ' + rows[i].value);
+  }
+  return out.join('\n');
 }
 
 // ▼▼▼ 메일 디자인 — 형식 바꾸려면 이 함수만 수정 ▼▼▼
-function buildHtml(d, now) {
+function buildHtml(rows, name, now) {
   var row = function (label, value) {
     if (!value) return '';
     return '' +
@@ -111,7 +93,11 @@ function buildHtml(d, now) {
     return '<tr><td style="padding:3px 0;font-size:13px;color:#8a929c;width:78px;">' + esc(label) + '</td>' +
            '<td style="padding:3px 0;font-size:13px;color:#374151;">' + esc(value) + '</td></tr>';
   };
-  var addr = (d.address + (d.detail ? '\n' + d.detail : '')).trim();
+
+  // 실제 응답을 폼 순서대로 모두 렌더링 (빈 값은 자동 생략)
+  var body = '';
+  for (var i = 0; i < rows.length; i++) body += row(rows[i].title, rows[i].value);
+  if (!body) body = '<tr><td style="padding:14px 0;font-size:14px;color:#8a929c;">응답 내용을 불러오지 못했습니다. 아래 \'응답 전체 보기\'에서 확인해 주세요.</td></tr>';
 
   return '' +
   '<div style="margin:0;padding:24px 12px;background:#eceff4;font-family:-apple-system,BlinkMacSystemFont,\'Malgun Gothic\',sans-serif;">' +
@@ -126,7 +112,7 @@ function buildHtml(d, now) {
         '<table role="presentation" width="100%">' +
           meta('등록위치', SITE_LABEL) +
           meta('등록시각', now) +
-          (d.when ? meta('희망시기', d.when) : '') +
+          meta('신청자', name) +
         '</table>' +
       '</td></tr>' +
       '<tr><td style="padding:18px 40px 4px;">' +
@@ -134,15 +120,7 @@ function buildHtml(d, now) {
       '</td></tr>' +
       '<tr><td style="padding:0 40px 8px;">' +
         '<table role="presentation" width="100%">' +
-          row('이름 / 업체명', d.name) +
-          row('연락처', d.contact) +
-          row('현장 주소', addr) +
-          row('공간 유형', d.building) +
-          row('철거 방식', d.mode + (d.area ? ' (' + d.area + '평)' : '')) +
-          row('철거 범위', d.scope) +
-          row('원상복구 / 폐기물 / 반출', d.restore + ' / ' + d.waste + ' / ' + d.transport) +
-          row('예상 견적 금액', d.total) +
-          row('기타 문의 / 견적 상세', d.note) +
+          body +
         '</table>' +
       '</td></tr>' +
       '<tr><td style="padding:22px 40px 36px;text-align:center;">' +
