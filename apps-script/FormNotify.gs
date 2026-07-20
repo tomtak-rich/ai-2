@@ -11,9 +11,8 @@
  *
  * [형식 수정] 메일 디자인/문구는 buildHtml() 함수만 고치면 됩니다.
  *
- * 이 스크립트는 폼 질문 '제목'을 하드코딩해서 찾지 않고,
- * 실제 응답을 폼에 표시된 순서대로 그대로 읽어 모두 렌더링합니다.
- * → 폼 질문 문구를 바꿔도 메일에서 값이 빠지지 않습니다.
+ * 이 스크립트는 폼 질문 '제목'을 하드코딩해 찾지 않고, 실제 응답을 폼 순서대로 읽어
+ * (1) 핵심 6개 항목을 상단에 크게 요약 → (2) 전체 응답을 그 아래에 모두 표시합니다.
  */
 
 var NOTIFY_TO   = 'dnslwkatn1@gmail.com';   // 받는 메일
@@ -22,15 +21,18 @@ var SITE_LABEL  = 'AI 견적 상세페이지';
 var BRAND_COLOR = '#2F6BF6';
 var FORM_RESPONSES_URL = 'https://docs.google.com/forms/d/1R9ktuWKnXr0gydCTw2t0FoWHTxvinEEIMerusPqqdvY/edit#responses';
 
-// 제목(질문 문구)에 아래 단어가 들어가면 상단 요약(신청자/연락처)으로도 뽑아 씁니다. (부가 기능, 없어도 무방)
-var NAME_HINT    = ['이름', '업체'];
-var CONTACT_HINT = ['연락처', '전화', '휴대'];
+// 핵심 요약에 뽑아 쓸 항목 — 질문 제목에 아래 단어가 포함되면 그 값을 사용합니다.
+// (폼 질문 문구가 조금 바뀌어도 매칭되도록 '포함' 방식으로 찾습니다.)
+var KEY = {
+  name:     ['이름', '업체'],
+  building: ['공간 유형', '공간유형', '공간'],
+  area:     ['평수', '평'],
+  restore:  ['원상복구', '원복'],
+  total:    ['예상 견적', '견적 금액', '견적서에 표시', '금액']
+};
 
 function onFormSubmit(e) {
-  // 폼에 표시된 순서대로 [{title, value}] 목록을 만든다.
-  // 트리거 종류에 따라 이벤트 구조가 다르므로 둘 다 지원:
-  //  - 폼에 직접 붙인 트리거: e.response (FormResponse) → 질문 순서 보장
-  //  - 스프레드시트에 붙인 트리거: e.namedValues (제목→값)
+  // 폼 순서대로 [{title, value}] 목록 생성. 폼/스프레드시트 트리거 모두 지원.
   var rows = [];
   if (e && e.response && typeof e.response.getItemResponses === 'function') {
     var items = e.response.getItemResponses();
@@ -44,16 +46,15 @@ function onFormSubmit(e) {
     }
   }
 
-  // 상단 요약용(있으면 사용, 없으면 생략)
-  var name    = pick(rows, NAME_HINT)    || '고객';
-  var contact = pick(rows, CONTACT_HINT) || '';
-
   var now = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd HH:mm');
-  var subject = '[' + BRAND + '] 새 상담 신청 · ' + name + (contact ? ' / ' + contact : '');
+  var name = pick(rows, KEY.name) || '고객';
+  var subject = '[' + BRAND + '] 새 상담 신청 · ' + name +
+                ' / ' + (pick(rows, KEY.building) || '-') +
+                (pick(rows, KEY.area) ? ' ' + pick(rows, KEY.area) + '평' : '');
 
-  GmailApp.sendEmail(NOTIFY_TO, subject, plainBody(rows, name, now), {
+  GmailApp.sendEmail(NOTIFY_TO, subject, plainBody(rows, now), {
     name: BRAND,
-    htmlBody: buildHtml(rows, name, now)
+    htmlBody: buildHtml(rows, now)
   });
 }
 
@@ -63,7 +64,7 @@ function normalize(v) {
   return (v == null ? '' : String(v)).trim();
 }
 
-// 제목에 힌트 단어가 포함된 첫 응답값을 반환
+// 제목에 힌트 단어가 포함된 첫 응답값 반환
 function pick(rows, hints) {
   for (var i = 0; i < rows.length; i++) {
     for (var j = 0; j < hints.length; j++) {
@@ -73,7 +74,18 @@ function pick(rows, hints) {
   return '';
 }
 
-function plainBody(rows, name, now) {
+// 현장 주소 + 상세 주소 합치기
+function pickAddress(rows) {
+  var base = '', detail = '';
+  for (var i = 0; i < rows.length; i++) {
+    var t = rows[i].title;
+    if (!base && t.indexOf('현장') > -1 && t.indexOf('주소') > -1) base = rows[i].value;
+    if (!detail && t.indexOf('상세') > -1 && t.indexOf('주소') > -1) detail = rows[i].value;
+  }
+  return (base + (detail ? ' ' + detail : '')).trim();
+}
+
+function plainBody(rows, now) {
   var out = [BRAND + ' 새 상담 신청 (' + now + ')', ''];
   for (var i = 0; i < rows.length; i++) {
     if (rows[i].value) out.push(rows[i].title + ': ' + rows[i].value);
@@ -82,22 +94,42 @@ function plainBody(rows, name, now) {
 }
 
 // ▼▼▼ 메일 디자인 — 형식 바꾸려면 이 함수만 수정 ▼▼▼
-function buildHtml(rows, name, now) {
-  var row = function (label, value) {
+function buildHtml(rows, now) {
+  // 핵심 요약 6개
+  var summary = [
+    ['이름 / 업체명', pick(rows, KEY.name)],
+    ['현장 주소',     pickAddress(rows)],
+    ['공간 유형',     pick(rows, KEY.building)],
+    ['평수',          pick(rows, KEY.area) ? pick(rows, KEY.area) + '평' : ''],
+    ['원상복구 여부', pick(rows, KEY.restore)],
+    ['AI 견적 비용',  pick(rows, KEY.total)]
+  ];
+
+  var keyRow = function (label, value) {
+    return '' +
+      '<tr>' +
+        '<td style="padding:13px 16px;font-size:14px;font-weight:700;color:#4b5563;width:120px;vertical-align:top;background:#f6f8fc;border-bottom:1px solid #eaeef5;">' + esc(label) + '</td>' +
+        '<td style="padding:13px 16px;font-size:16px;font-weight:700;color:#111827;vertical-align:top;border-bottom:1px solid #eaeef5;white-space:pre-line;">' + (value ? esc(value) : '<span style="color:#c3c9d4;font-weight:500;">미입력</span>') + '</td>' +
+      '</tr>';
+  };
+  var summaryHtml = '';
+  for (var i = 0; i < summary.length; i++) summaryHtml += keyRow(summary[i][0], summary[i][1]);
+
+  // 전체 응답(폼 순서대로, 빈 값 생략)
+  var detailRow = function (label, value) {
     if (!value) return '';
     return '' +
       '<tr><td style="padding:14px 0 4px;font-size:13px;font-weight:700;color:#111827;">' + esc(label) + '</td></tr>' +
       '<tr><td style="padding:0 0 14px;font-size:15px;color:#374151;line-height:1.5;border-bottom:1px solid #f0f2f5;white-space:pre-line;">' + esc(value) + '</td></tr>';
   };
+  var detailHtml = '';
+  for (var j = 0; j < rows.length; j++) detailHtml += detailRow(rows[j].title, rows[j].value);
+  if (!detailHtml) detailHtml = '<tr><td style="padding:14px 0;font-size:14px;color:#8a929c;">전체 응답을 불러오지 못했습니다. 아래 \'응답 전체 보기\'에서 확인해 주세요.</td></tr>';
+
   var meta = function (label, value) {
     return '<tr><td style="padding:3px 0;font-size:13px;color:#8a929c;width:78px;">' + esc(label) + '</td>' +
            '<td style="padding:3px 0;font-size:13px;color:#374151;">' + esc(value) + '</td></tr>';
   };
-
-  // 실제 응답을 폼 순서대로 모두 렌더링 (빈 값은 자동 생략)
-  var body = '';
-  for (var i = 0; i < rows.length; i++) body += row(rows[i].title, rows[i].value);
-  if (!body) body = '<tr><td style="padding:14px 0;font-size:14px;color:#8a929c;">응답 내용을 불러오지 못했습니다. 아래 \'응답 전체 보기\'에서 확인해 주세요.</td></tr>';
 
   return '' +
   '<div style="margin:0;padding:24px 12px;background:#eceff4;font-family:-apple-system,BlinkMacSystemFont,\'Malgun Gothic\',sans-serif;">' +
@@ -108,21 +140,29 @@ function buildHtml(rows, name, now) {
           '<span style="color:' + BRAND_COLOR + ';">새 상담 신청</span>이 접수되었습니다.' +
         '</div>' +
       '</td></tr>' +
-      '<tr><td style="padding:22px 40px 6px;">' +
+      '<tr><td style="padding:20px 40px 6px;">' +
         '<table role="presentation" width="100%">' +
           meta('등록위치', SITE_LABEL) +
           meta('등록시각', now) +
-          meta('신청자', name) +
         '</table>' +
       '</td></tr>' +
-      '<tr><td style="padding:18px 40px 4px;">' +
-        '<div style="font-size:15px;font-weight:800;color:#111827;border-bottom:2px solid #111827;padding-bottom:8px;">상담 정보</div>' +
+
+      // ── 핵심 요약 카드 (첫 화면에서 바로 보이는 6개 항목) ──
+      '<tr><td style="padding:16px 40px 4px;">' +
+        '<div style="font-size:15px;font-weight:800;color:#111827;margin-bottom:10px;">핵심 요약</div>' +
+        '<table role="presentation" width="100%" style="border:1px solid #eaeef5;border-radius:12px;border-collapse:separate;overflow:hidden;">' +
+          summaryHtml +
+        '</table>' +
+      '</td></tr>' +
+
+      // ── 전체 응답 ──
+      '<tr><td style="padding:22px 40px 4px;">' +
+        '<div style="font-size:15px;font-weight:800;color:#111827;border-bottom:2px solid #111827;padding-bottom:8px;">전체 상담 정보</div>' +
       '</td></tr>' +
       '<tr><td style="padding:0 40px 8px;">' +
-        '<table role="presentation" width="100%">' +
-          body +
-        '</table>' +
+        '<table role="presentation" width="100%">' + detailHtml + '</table>' +
       '</td></tr>' +
+
       '<tr><td style="padding:22px 40px 36px;text-align:center;">' +
         '<a href="' + FORM_RESPONSES_URL + '" style="display:inline-block;background:' + BRAND_COLOR + ';color:#fff;text-decoration:none;font-size:15px;font-weight:800;padding:15px 40px;border-radius:10px;">응답 전체 보기</a>' +
       '</td></tr>' +

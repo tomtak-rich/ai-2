@@ -2633,7 +2633,10 @@
     put(f.building, d.building);
     put(f.area, d.area);
     put(f.mode, d.mode);
-    d.works.forEach(w => put(f.scope, w));   // 체크박스: 선택 항목마다 append
+    // 철거 범위(체크박스)는 폼에서 '필수'입니다. 전체 철거는 site에서 범위를 따로 안 고르므로
+    // 비워두면 (pageHistory로 전체 페이지 검증 시) 제출이 통째로 거부됩니다 → 전체 철거는 4개 모두 전송.
+    const scopeToSend = d.works.length ? d.works : ['천장 철거', '벽체 철거', '바닥 철거', '주방 철거'];
+    scopeToSend.forEach(w => put(f.scope, w));   // 체크박스: 선택 항목마다 append
     put(f.restore, d.restore);
     put(f.waste, d.waste);
     put(f.transport, d.transport);
@@ -2643,6 +2646,12 @@
     put(f.detailAddr, d.detailAddr);
     put(f.total, d.total);
     put(f.note, buildConsultMessage(d));
+    // ★ 이 폼은 5개 섹션(Step01~05)으로 나뉜 '여러 페이지' 폼입니다.
+    //   pageHistory 없이 보내면 구글폼이 첫 페이지(공간 유형)만 저장하고 나머지는 버립니다.
+    //   아래 값을 함께 보내야 모든 페이지의 답변이 정상 기록됩니다.
+    fd.append('pageHistory', '0,1,2,3,4');   // 페이지 0~4 (섹션 수에 맞춤)
+    fd.append('fvv', '1');
+    fd.append('submissionTimestamp', '-1');
 
     if (btn) { btn.dataset.sending = '1'; btn.disabled = true; btn.textContent = '접수 중…'; }
     try {
